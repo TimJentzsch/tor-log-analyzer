@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-import cli.app
 from typing import List, Dict
-from datetime import datetime
-from dateutil import parser
 import json
+from datetime import datetime
+import cli.app
+from dateutil import parser
 
 class DoneInfo:
     def __init__(self, time: datetime, post_id: str, username: str):
@@ -47,6 +47,19 @@ def done_line_to_dict(line: str) -> DoneInfo:
 
     return DoneInfo(time, post_id, username)
 
+def generate_user_stats(app, dones: List[DoneInfo]):
+    user_data = {}
+
+    for done in dones:
+        user = done.username
+        if user in user_data:
+            user_data[user] += 1
+        else:
+            user_data[user] = 1
+
+    with open(f"{app.params.output}/user_gamma.json", "w") as f:
+        dumps = json.dumps(user_data, indent=2)
+        f.write(dumps + "\n")
 
 def process_lines(app, lines: List[str]):
     # Only consider "done"ed posts
@@ -61,6 +74,7 @@ def process_lines(app, lines: List[str]):
         dumps = json.dumps([done.to_dict() for done in dones], indent=2)
         f.write(dumps + "\n")
 
+    generate_user_stats(app, dones)
 
 @cli.app.CommandLineApp
 def log_analyzer(app):
