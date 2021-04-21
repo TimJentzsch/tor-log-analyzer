@@ -78,7 +78,9 @@ def generate_user_stats(app, dones: List[DoneInfo]):
     labels = [entry[0] for entry in compressed_data]
     data = [entry[1] for entry in compressed_data]
 
-    plt.barh(labels, data)
+    colors = [app.params.secondarycolor] + [app.params.primarycolor for _ in range(len(top_list))]
+
+    plt.barh(labels, data, color=colors)
     plt.show()
 
 def process_lines(app, lines: List[str]):
@@ -99,6 +101,17 @@ def process_lines(app, lines: List[str]):
 @cli.app.CommandLineApp
 def log_analyzer(app):
     input_file = app.params.input
+
+    # Set plot colors
+    plt.rcParams['figure.facecolor'] = app.params.backgroundcolor
+    plt.rcParams['axes.facecolor'] = app.params.backgroundcolor
+    plt.rcParams['axes.edgecolor'] = app.params.linecolor
+    plt.rcParams['text.color'] = app.params.textcolor
+    plt.rcParams['xtick.color'] = app.params.linecolor
+    plt.rcParams['xtick.labelcolor'] = app.params.textcolor
+    plt.rcParams['ytick.color'] = app.params.linecolor
+    plt.rcParams['ytick.labelcolor'] = app.params.textcolor
+
     with open(input_file) as f:
         lines = f.read().splitlines()
         process_lines(app, lines)
@@ -107,6 +120,12 @@ def log_analyzer(app):
 log_analyzer.add_param("-i", "--input", help="the path to the input file", default="input/input.log", type=str)
 log_analyzer.add_param("-o", "--output", help="the path to the output folder", default="output", type=str)
 log_analyzer.add_param("-t", "--top", help="the number of entires in the top X diagrams", default=10, type=int)
+
+log_analyzer.add_param("--primarycolor", help="the primary color to use in the graphs", default="#80cbc4", type=str)
+log_analyzer.add_param("--secondarycolor", help="the secondary color to use in the graphs", default="#438078", type=str)
+log_analyzer.add_param("--backgroundcolor", help="the background color to use in the graphs", default="#232323", type=str)
+log_analyzer.add_param("--textcolor", help="the text color to use on the background color", default="#fff", type=str)
+log_analyzer.add_param("--linecolor", help="the text color to use on the background color", default="#484848", type=str)
 
 if __name__ == "__main__":
     log_analyzer.run()
