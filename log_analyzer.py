@@ -65,22 +65,41 @@ def generate_user_stats(app, dones: List[DoneInfo]):
     top_count = app.params.top
 
     # Sort by user gamma
-    sorted_data: List[Tuple[str, int]] = [(username, user_data[username]) for username in user_data]
+    sorted_data: List[Tuple[str, int]] = [(f"u/{username}", user_data[username]) for username in user_data]
     sorted_data.sort(key=lambda e: e[1], reverse=True)
-    # Aggregate the rest of the users that didn't make it in the top to a single entry
-    rest: List[Tuple[str, int]] = [("Other", sum([entry[1] for entry in sorted_data[top_count:]]))]
     # Extract the top users
     top_list = sorted_data[:top_count]
     top_list.reverse()
-    # Merge everything together
-    compressed_data: List[Tuple[str, int]] = rest + top_list
+
+    compressed_data: List[Tuple[str, int]] = top_list
+
+    if len(sorted_data) > top_count:
+        # Aggregate the rest of the users that didn't make it in the top to a single entry
+        rest: List[Tuple[str, int]] = [("Other", sum([entry[1] for entry in sorted_data[top_count:]]))]
+        compressed_data = rest + top_list
 
     labels = [entry[0] for entry in compressed_data]
     data = [entry[1] for entry in compressed_data]
 
-    colors = [app.params.secondarycolor] + [app.params.primarycolor for _ in range(len(top_list))]
+    colors = [app.params.primarycolor for _ in range(len(top_list))]
+
+    if len(sorted_data) > top_count:
+        colors = [app.params.secondarycolor] + colors
 
     plt.barh(labels, data, color=colors)
+    plt.ylabel("User")
+    plt.xlabel("Transcriptions")
+    plt.title(f"Top {top_count} Contributors")
+
+    # Annotate data
+    for x, y in zip(data,labels):
+        plt.annotate(x, # label with gamma
+                    (x,y),
+                    textcoords="offset points",
+                    xytext=(3,0),
+                    ha="left",
+                    va="center")
+
     plt.show()
 
 def process_lines(app, lines: List[str]):
@@ -102,9 +121,11 @@ def process_lines(app, lines: List[str]):
 def log_analyzer(app):
     input_file = app.params.input
 
+    plt.rcParams['figure.autolayout'] = True
     # Set plot colors
     plt.rcParams['figure.facecolor'] = app.params.backgroundcolor
     plt.rcParams['axes.facecolor'] = app.params.backgroundcolor
+    plt.rcParams['axes.labelcolor'] = app.params.textcolor
     plt.rcParams['axes.edgecolor'] = app.params.linecolor
     plt.rcParams['text.color'] = app.params.textcolor
     plt.rcParams['xtick.color'] = app.params.linecolor
