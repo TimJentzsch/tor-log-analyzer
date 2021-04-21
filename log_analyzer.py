@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import json
 from datetime import datetime
 import cli.app
@@ -62,8 +62,21 @@ def generate_user_stats(app, dones: List[DoneInfo]):
         dumps = json.dumps(user_data, indent=2)
         f.write(dumps + "\n")
 
-    labels = [username for username in user_data]
-    data = [user_data[username] for username in user_data]
+    top_count = app.params.top
+
+    # Sort by user gamma
+    sorted_data: List[Tuple[str, int]] = [(username, user_data[username]) for username in user_data]
+    sorted_data.sort(key=lambda e: e[1], reverse=True)
+    # Aggregate the rest of the users that didn't make it in the top to a single entry
+    rest: List[Tuple[str, int]] = [("Other", sum([entry[1] for entry in sorted_data[top_count:]]))]
+    # Extract the top users
+    top_list = sorted_data[:top_count]
+    top_list.reverse()
+    # Merge everything together
+    compressed_data: List[Tuple[str, int]] = rest + top_list
+
+    labels = [entry[0] for entry in compressed_data]
+    data = [entry[1] for entry in compressed_data]
 
     plt.barh(labels, data)
     plt.show()
@@ -93,6 +106,7 @@ def log_analyzer(app):
 # Set CLI parameters
 log_analyzer.add_param("-i", "--input", help="the path to the input file", default="input/input.log", type=str)
 log_analyzer.add_param("-o", "--output", help="the path to the output folder", default="output", type=str)
+log_analyzer.add_param("-t", "--top", help="the number of entires in the top X diagrams", default=10, type=int)
 
 if __name__ == "__main__":
     log_analyzer.run()
