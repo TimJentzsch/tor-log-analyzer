@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 import cli.app
 from dateutil import parser
+import matplotlib.pyplot as plt
 
 class DoneInfo:
     def __init__(self, time: datetime, post_id: str, username: str):
@@ -60,6 +61,12 @@ def generate_user_stats(app, dones: List[DoneInfo]):
     with open(f"{app.params.output}/user_gamma.json", "w") as f:
         dumps = json.dumps(user_data, indent=2)
         f.write(dumps + "\n")
+
+    labels = [username for username in user_data]
+    data = [user_data[username] for username in user_data]
+
+    plt.barh(labels, data)
+    plt.show()
 
 def process_lines(app, lines: List[str]):
     # Only consider "done"ed posts

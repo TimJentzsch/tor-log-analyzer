@@ -1,2 +1,3 @@
 pyCLI
 python-dateutil
+matplotlib
