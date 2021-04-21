@@ -2,6 +2,7 @@
 from typing import List, Dict, Tuple
 import json
 from datetime import datetime
+from os import makedirs
 import cli.app
 from dateutil import parser
 import matplotlib.pyplot as plt
@@ -58,7 +59,7 @@ def generate_user_stats(app, dones: List[DoneInfo]):
         else:
             user_data[user] = 1
 
-    with open(f"{app.params.output}/user_gamma.json", "w") as f:
+    with open(f"{app.params.output}/.cache/user_gamma.json", "w") as f:
         dumps = json.dumps(user_data, indent=2)
         f.write(dumps + "\n")
 
@@ -100,29 +101,56 @@ def generate_user_stats(app, dones: List[DoneInfo]):
                     ha="left",
                     va="center")
 
-    plt.show()
+    plt.savefig(f"{app.params.output}/user_gamma.png")
+    plt.close()
+
+def generate_history(app, dones: List[DoneInfo]):
+    history_data = []
+
+    for i, val in enumerate(dones):
+        entry = (val.time, i + 1)
+        history_data.append(entry)
+
+    dates = [entry[0] for entry in history_data]
+    data = [entry[1] for entry in history_data]
+
+    plt.plot(dates, data, color=app.params.primarycolor)
+    plt.xlabel("Time")
+    plt.ylabel("Total Transcriptions")
+    plt.title("History")
+
+    plt.savefig(f"{app.params.output}/history.png")
+    plt.close()
 
 def process_lines(app, lines: List[str]):
     # Only consider "done"ed posts
     done_lines = [l for l in lines if "process_done" in l and "Moderator override" not in l]
 
-    with open(f"{app.params.output}/done.log", "w") as f:
+    with open(f"{app.params.output}/.cache/done.log", "w") as f:
         f.write("\n".join(done_lines))
 
     dones = [done_line_to_dict(line) for line in done_lines]
 
-    with open(f"{app.params.output}/done.json", "w") as f:
+    with open(f"{app.params.output}/.cache/done.json", "w") as f:
         dumps = json.dumps([done.to_dict() for done in dones], indent=2)
         f.write(dumps + "\n")
 
     generate_user_stats(app, dones)
+    generate_history(app, dones)
 
 @cli.app.CommandLineApp
 def log_analyzer(app):
     input_file = app.params.input
 
+    try:
+        makedirs(f"{app.params.output}/.cache")
+    except OSError as error:
+        pass
+
+    # Configure base plot style
     plt.rcParams['figure.autolayout'] = True
-    # Set plot colors
+    plt.rcParams['date.autoformatter.hour'] = "%H:%M"
+
     plt.rcParams['figure.facecolor'] = app.params.backgroundcolor
     plt.rcParams['axes.facecolor'] = app.params.backgroundcolor
     plt.rcParams['axes.labelcolor'] = app.params.textcolor
