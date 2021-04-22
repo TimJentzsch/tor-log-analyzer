@@ -1,5 +1,6 @@
 input
 output
+config
 
 __pycache__
 .vscode/.ropeproject

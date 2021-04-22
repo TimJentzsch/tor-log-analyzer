@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 from typing import List, Tuple
 import json
+import yaml
 from os import makedirs
 import cli.app
 from dateutil import parser
 import matplotlib.pyplot as plt
 
+from tor_log_analyzer.util import clean_dict
 from tor_log_analyzer.done_info import DoneInfo
 from tor_log_analyzer.config import Config, config_from_dict_or_defaults
 
@@ -147,20 +149,44 @@ def config_from_app(app) -> Config:
     """
     params = app.params
 
-    app_config_dict = {
+    base_config = {}
+
+    # Load base config file if specified
+    if params.config:
+        config_path = params.config
+        ext = config_path.split(".")[-1]
+
+        with open(config_path) as f:
+            if ext in ["json"]:
+                base_config = json.load(f)
+            elif ext in ["yml", "yaml"]:
+                base_config = yaml.load(f, Loader=yaml.SafeLoader)
+            else:
+                raise RuntimeError(f"Unsupported file extension '.{ext}'.")
+
+    # Assemble cli parameters
+    color_config_dict = clean_dict({
+        "primary": getattr(params, 'colors.primary', None),
+        "secondary": getattr(params, 'colors.secondary', None),
+        "background": getattr(params, 'colors.background', None),
+        "text": getattr(params, 'colors.text', None),
+        "line": getattr(params, 'colors.line', None),
+    })
+
+    merged_color_config_dict = {
+        **base_config["colors"], **color_config_dict} if "colors" in base_config else color_config_dict
+
+    app_config_dict = clean_dict({
         "input-file": params.input,
         "output-dir": params.output,
         "top-count": params.top,
-        "colors": {
-            "primary": getattr(params, 'colors.primary', None),
-            "secondary": getattr(params, 'colors.secondary', None),
-            "background": getattr(params, 'colors.background', None),
-            "text": getattr(params, 'colors.text', None),
-            "line": getattr(params, 'colors.line', None),
-        }
-    }
+        "colors": merged_color_config_dict,
+    })
 
-    return config_from_dict_or_defaults(app_config_dict)
+    # Overwrite the base config with the cli parameters
+    merged_config_dict = {**base_config, **app_config_dict}
+
+    return config_from_dict_or_defaults(merged_config_dict)
 
 
 @cli.app.CommandLineApp
@@ -183,6 +209,8 @@ def log_analyzer(app):
 
 
 # Set CLI parameters
+log_analyzer.add_param(
+    "-c", "--config", help="path to a .json, .yml or .yaml config file. Can be used as a template, all other options override this file", type=str)
 log_analyzer.add_param(
     "-i", "--input", help="the path to the input file", type=str)
 log_analyzer.add_param(
