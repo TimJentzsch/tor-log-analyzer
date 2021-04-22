@@ -3,6 +3,7 @@ import json
 import yaml
 import cli.app
 
+from tor_log_analyzer import __SELF_NAME__, __version__, __description__
 from tor_log_analyzer.main import analyze_logs
 from tor_log_analyzer.util import clean_dict
 from tor_log_analyzer.config import Config, config_from_dict_or_defaults
@@ -54,7 +55,7 @@ def config_from_app(app) -> Config:
     return config_from_dict_or_defaults(merged_config_dict)
 
 
-@cli.app.CommandLineApp
+@cli.app.CommandLineApp(name=__SELF_NAME__, version=__version__, description=__description__)
 def log_analyzer(app):
     config = config_from_app(app)
     analyze_logs(config)
