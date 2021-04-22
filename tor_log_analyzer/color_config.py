@@ -1,5 +1,7 @@
 from typing import Dict
 
+from tor_log_analyzer.util import clean_dict
+
 
 class ColorConfig:
     def __init__(self, primary: str, secondary: str, background: str, text: str, line: str):
@@ -66,4 +68,5 @@ def colors_from_dict_or_defaults(config: Dict) -> ColorConfig:
     or uses the defaults if some are missing.
     """
     default_dict = DEFAULT_COLORS.to_dict()
-    return colors_from_dict({ **default_dict, **config })
+    cleaned_config = clean_dict(config)
+    return colors_from_dict({**default_dict, **cleaned_config})

@@ -152,11 +152,11 @@ def config_from_app(app) -> Config:
         "output-dir": params.output,
         "top-count": params.top,
         "colors": {
-            "primary": params.primarycolor,
-            "secondary": params.secondarycolor,
-            "background": params.backgroundcolor,
-            "text": params.textcolor,
-            "line": params.linecolor,
+            "primary": getattr(params, 'colors.primary', None),
+            "secondary": getattr(params, 'colors.secondary', None),
+            "background": getattr(params, 'colors.background', None),
+            "text": getattr(params, 'colors.text', None),
+            "line": getattr(params, 'colors.line', None),
         }
     }
 
@@ -184,22 +184,22 @@ def log_analyzer(app):
 
 # Set CLI parameters
 log_analyzer.add_param(
-    "-i", "--input", help="the path to the input file", default="input/input.log", type=str)
+    "-i", "--input", help="the path to the input file", type=str)
 log_analyzer.add_param(
-    "-o", "--output", help="the path to the output folder", default="output", type=str)
+    "-o", "--output", help="the path to the output folder", type=str)
 log_analyzer.add_param(
-    "-t", "--top", help="the number of entires in the top X diagrams", default=10, type=int)
+    "-t", "--top", help="the number of entires in the top X diagrams", type=int)
 
 log_analyzer.add_param(
-    "--primarycolor", help="the primary color to use in the graphs", default="#80cbc4", type=str)
+    "--colors.primary", help="the primary color to use in the charts", type=str)
 log_analyzer.add_param(
-    "--secondarycolor", help="the secondary color to use in the graphs", default="#438078", type=str)
+    "--colors.secondary", help="the secondary color to use in the charts", type=str)
 log_analyzer.add_param(
-    "--backgroundcolor", help="the background color to use in the graphs", default="#232323", type=str)
+    "--colors.background", help="the background color to use in the charts", type=str)
 log_analyzer.add_param(
-    "--textcolor", help="the text color to use on the background color", default="#fff", type=str)
+    "--colors.text", help="the text color to use on the background color", type=str)
 log_analyzer.add_param(
-    "--linecolor", help="the text color to use on the background color", default="#484848", type=str)
+    "--colors.line", help="the color to use for the chart lines", type=str)
 
 if __name__ == "__main__":
     log_analyzer.run()

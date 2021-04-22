@@ -1,5 +1,6 @@
 from typing import Dict
-from tor_log_analyzer.color_config import ColorConfig, DEFAULT_COLORS, colors_from_dict
+from tor_log_analyzer.util import clean_dict
+from tor_log_analyzer.color_config import ColorConfig, DEFAULT_COLORS, colors_from_dict_or_defaults
 
 
 class Config:
@@ -58,7 +59,7 @@ def config_from_dict(config: Dict) -> Config:
         input_file=config["input-file"],
         output_dir=config["output-dir"],
         top_count=config["top-count"],
-        colors=colors_from_dict(config["colors"]),
+        colors=colors_from_dict_or_defaults(config["colors"]),
     )
 
 
@@ -68,4 +69,5 @@ def config_from_dict_or_defaults(config: Dict) -> Config:
     or uses the defaults if some are missing.
     """
     default_dict = DEFAULT_CONFIG.to_dict()
-    return config_from_dict({**default_dict, **config})
+    cleaned_config = clean_dict(config)
+    return config_from_dict({**default_dict, **cleaned_config})
