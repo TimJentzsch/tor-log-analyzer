@@ -2,3 +2,4 @@ pyCLI
 python-dateutil
 matplotlib
 PyYAML
+praw
