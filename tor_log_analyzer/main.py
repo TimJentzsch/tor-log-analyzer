@@ -51,7 +51,7 @@ def generate_user_stats(config: Config, dones: List[DoneInfo]):
     if len(sorted_data) > top_count:
         # Aggregate the rest of the users that didn't make it in the top to a single entry
         rest: List[Tuple[str, int]] = [
-            ("Other", sum([entry[1] for entry in sorted_data[top_count:]]))]
+            ("Other Volunteers", sum([entry[1] for entry in sorted_data[top_count:]]))]
         compressed_data = rest + top_list
 
     labels = [entry[0] for entry in compressed_data]

@@ -31,6 +31,17 @@ def config_from_app(app) -> Config:
                 raise RuntimeError(f"Unsupported file extension '.{ext}'.")
 
     # Assemble cli parameters
+
+    # Authentification
+    auth_config_dict = clean_dict({
+        "clientID": getattr(params, 'auth.clientID', None),
+        "clientSecret": getattr(params, 'auth.clientSecret', None),
+    })
+
+    merged_auth_config_dict = {
+        **base_config["auth"], **auth_config_dict} if "auth" in base_config else auth_config_dict
+
+    # Colors
     color_config_dict = clean_dict({
         "primary": getattr(params, 'colors.primary', None),
         "secondary": getattr(params, 'colors.secondary', None),
@@ -42,10 +53,12 @@ def config_from_app(app) -> Config:
     merged_color_config_dict = {
         **base_config["colors"], **color_config_dict} if "colors" in base_config else color_config_dict
 
+    # General stuff
     app_config_dict = clean_dict({
         "input-file": params.input,
         "output-dir": params.output,
         "top-count": params.top,
+        "auth": merged_auth_config_dict,
         "colors": merged_color_config_dict,
     })
 
@@ -70,6 +83,11 @@ log_analyzer.add_param(
     "-o", "--output", help="the path to the output folder", type=str)
 log_analyzer.add_param(
     "-t", "--top", help="the number of entires in the top X diagrams", type=int)
+
+log_analyzer.add_param(
+    "--auth.clientID", help="the client id assigned by reddit", type=str)
+log_analyzer.add_param(
+    "--auth.clientSecret", help="the client secret assigned by reddit", type=str)
 
 log_analyzer.add_param(
     "--colors.primary", help="the primary color to use in the charts", type=str)
