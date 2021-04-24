@@ -2,7 +2,7 @@
 import json
 import yaml
 import traceback
-import cli.app
+import click
 
 from tor_log_analyzer import __project_name__, __version__, __description__
 from tor_log_analyzer.main import analyze_logs
@@ -10,20 +10,24 @@ from tor_log_analyzer.util import clean_dict
 from tor_log_analyzer.config import Config, config_from_dict_or_defaults
 
 
-def config_from_app(app) -> Config:
+def config_from_options(
+        # General
+        config_file, input_file, output_dir, top_count, no_cache,
+        # Auth
+        auth_client_id, auth_client_secret,
+        # Colors
+        colors_primary, colors_secondary, colors_background, colors_text, colors_line
+) -> Config:
     """
     Creates the config from the app parameters.
     """
-    params = app.params
-
     base_config = {}
 
     # Load base config file if specified
-    if params.config:
-        config_path = params.config
-        ext = config_path.split(".")[-1]
+    if config_file:
+        ext = config_file.split(".")[-1]
 
-        with open(config_path) as f:
+        with open(config_file) as f:
             if ext in ["json"]:
                 base_config = json.load(f)
             elif ext in ["yml", "yaml"]:
@@ -35,8 +39,8 @@ def config_from_app(app) -> Config:
 
     # Authentification
     auth_config_dict = clean_dict({
-        "clientID": getattr(params, 'auth.clientID', None),
-        "clientSecret": getattr(params, 'auth.clientSecret', None),
+        "clientID": auth_client_id,
+        "clientSecret": auth_client_secret,
     })
 
     merged_auth_config_dict = {
@@ -44,11 +48,11 @@ def config_from_app(app) -> Config:
 
     # Colors
     color_config_dict = clean_dict({
-        "primary": getattr(params, 'colors.primary', None),
-        "secondary": getattr(params, 'colors.secondary', None),
-        "background": getattr(params, 'colors.background', None),
-        "text": getattr(params, 'colors.text', None),
-        "line": getattr(params, 'colors.line', None),
+        "primary": colors_primary,
+        "secondary": colors_secondary,
+        "background": colors_background,
+        "text": colors_text,
+        "line": colors_line,
     })
 
     merged_color_config_dict = {
@@ -56,9 +60,9 @@ def config_from_app(app) -> Config:
 
     # General stuff
     app_config_dict = clean_dict({
-        "input-file": params.input,
-        "output-dir": params.output,
-        "top-count": params.top,
+        "input-file": input_file,
+        "output-dir": output_dir,
+        "top-count": top_count,
         "auth": merged_auth_config_dict,
         "colors": merged_color_config_dict,
     })
@@ -69,44 +73,38 @@ def config_from_app(app) -> Config:
     return config_from_dict_or_defaults(merged_config_dict)
 
 
-@cli.app.CommandLineApp(name=__project_name__, version=__version__, description=__description__)
-def log_analyzer(app):
-    config = config_from_app(app)
-    
-    try:
-        analyze_logs(config)
-    except Exception as e:
-        print(f"\n\nERROR: {e}")
+@click.command()
+# General options
+@click.option("-c", "--config", "config_file", help="path to a .json, .yml or .yaml config file. Can be used as a template, all other options override this file", type=str)
+@click.option("-i", "--input", "input_file", help="the path to the input file", type=str)
+@click.option("-o", "--output", "output_dir", help="the path to the output folder", type=str)
+@click.option("-t", "--top-count", "top_count", help="the number of entires in the top X diagrams", type=int)
+@click.option("--no-cache", "no_cache", help="disables the cache", type=bool)
+# Auth
+@click.option("--auth.clientID", "auth_client_id", help="the client id assigned by reddit", type=str)
+@click.option("--auth.clientSecret", "auth_client_secret", help="the client secret assigned by reddit", type=str)
+# Colors
+@click.option("--colors.primary", "colors_primary", help="the primary color to use in the charts", type=str)
+@click.option("--colors.secondary", "colors_secondary",  help="the secondary color to use in the charts", type=str)
+@click.option("--colors.background", "colors_background",  help="the background color to use in the charts", type=str)
+@click.option("--colors.text", "colors_text",  help="the text color to use on the background color", type=str)
+@click.option("--colors.line", "colors_line",  help="the color to use for the chart lines", type=str)
+def log_analyzer(
+        # General
+        config_file=None, input_file=None, output_dir=None, top_count=None, no_cache=None,
+        # Auth
+        auth_client_id=None, auth_client_secret=None,
+        # Colors
+        colors_primary=None, colors_secondary=None, colors_background=None, colors_text=None, colors_line=None
+):
+    config = config_from_options(
+        config_file, input_file, output_dir, top_count, no_cache,
+        auth_client_id, auth_client_secret,
+        colors_primary, colors_secondary, colors_background, colors_text, colors_line
+    )
 
+    analyze_logs(config)
 
-# Set CLI parameters
-log_analyzer.add_param(
-    "-c", "--config", help="path to a .json, .yml or .yaml config file. Can be used as a template, all other options override this file", type=str)
-log_analyzer.add_param(
-    "-i", "--input", help="the path to the input file", type=str)
-log_analyzer.add_param(
-    "-o", "--output", help="the path to the output folder", type=str)
-log_analyzer.add_param(
-    "-t", "--top", help="the number of entires in the top X diagrams", type=int)
-
-log_analyzer.add_param(
-    "--auth.clientID", help="the client id assigned by reddit", type=str)
-log_analyzer.add_param(
-    "--auth.clientSecret", help="the client secret assigned by reddit", type=str)
-
-log_analyzer.add_param(
-    "--colors.primary", help="the primary color to use in the charts", type=str)
-log_analyzer.add_param(
-    "--colors.secondary", help="the secondary color to use in the charts", type=str)
-log_analyzer.add_param(
-    "--colors.background", help="the background color to use in the charts", type=str)
-log_analyzer.add_param(
-    "--colors.text", help="the text color to use on the background color", type=str)
-log_analyzer.add_param(
-    "--colors.line", help="the color to use for the chart lines", type=str)
 
 if __name__ == "__main__":
-    try:
-        log_analyzer.run()
-    except RuntimeError:
-        pass
+    log_analyzer()

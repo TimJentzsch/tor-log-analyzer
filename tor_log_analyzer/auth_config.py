@@ -21,6 +21,12 @@ class AuthConfig:
         }
 
 
+DEFAULT_AUTH = AuthConfig(
+    client_id=None,
+    client_secret=None,
+)
+
+
 def auth_from_dict(config: Dict) -> AuthConfig:
     """
     Creates a color configuration based on the values in a dictionary.

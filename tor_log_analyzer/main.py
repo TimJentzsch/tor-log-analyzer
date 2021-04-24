@@ -104,9 +104,7 @@ def generate_history(config: Config, dones: List[DoneInfo]):
 def fetch_transcriptions(config: Config, dones: List[DoneInfo]):
     cache = {}
     with open(f"{config.cache_dir}/transcriptions.json", encoding='utf8') as f:
-        print("Get cache")
         cache = json.load(f)
-        print("Got it")
 
     reddit_api = RedditAPI(config)
     transcriptions = {}

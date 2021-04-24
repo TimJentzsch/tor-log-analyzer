@@ -1,4 +1,4 @@
-pyCLI
+click
 python-dateutil
 matplotlib
 PyYAML
