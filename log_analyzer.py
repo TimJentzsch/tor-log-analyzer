@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import yaml
+import traceback
 import cli.app
 
 from tor_log_analyzer import __project_name__, __version__, __description__
@@ -71,7 +72,11 @@ def config_from_app(app) -> Config:
 @cli.app.CommandLineApp(name=__project_name__, version=__version__, description=__description__)
 def log_analyzer(app):
     config = config_from_app(app)
-    analyze_logs(config)
+    
+    try:
+        analyze_logs(config)
+    except Exception as e:
+        print(f"\n\nERROR: {e}")
 
 
 # Set CLI parameters
@@ -101,4 +106,7 @@ log_analyzer.add_param(
     "--colors.line", help="the color to use for the chart lines", type=str)
 
 if __name__ == "__main__":
-    log_analyzer.run()
+    try:
+        log_analyzer.run()
+    except RuntimeError:
+        pass

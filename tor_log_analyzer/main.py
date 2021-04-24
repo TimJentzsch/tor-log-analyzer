@@ -5,6 +5,7 @@ from dateutil import parser
 import matplotlib.pyplot as plt
 
 from tor_log_analyzer.done_info import DoneInfo
+from tor_log_analyzer.transcription import Transcription
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.reddit.reddit_api import RedditAPI
 
@@ -99,10 +100,33 @@ def generate_history(config: Config, dones: List[DoneInfo]):
     plt.savefig(f"{config.image_dir}/history.png")
     plt.close()
 
+
 def fetch_transcriptions(config: Config, dones: List[DoneInfo]):
+    cache = {}
+    with open(f"{config.cache_dir}/transcriptions.json", encoding='utf8') as f:
+        print("Get cache")
+        cache = json.load(f)
+        print("Got it")
+
     reddit_api = RedditAPI(config)
-    submission = reddit_api.get_target_submission(dones[0].post_id)
-    print(submission.title)
+    transcriptions = {}
+    print("Fetching transcriptions:")
+    for i, done in enumerate(dones):
+        print(f"{' ' * 300}\r    [{i+1}/{len(dones)}]: ", end="")
+        # Try to get from cache
+        if done.post_id in cache:
+            transcriptions[done.post_id] = cache[done.post_id]
+        # Get transcription from Reddit
+        else:
+            transcription_comment = reddit_api.get_transcription(
+                done.post_id, done.username)
+            if transcription_comment is None:
+                continue
+            transcription = Transcription(transcription_comment)
+            transcriptions[done.post_id] = transcription.to_dict()
+
+        with open(f"{config.cache_dir}/transcriptions.json", "w", encoding='utf8') as f:
+            json.dump(transcriptions, f, ensure_ascii=False, indent=2)
 
 
 def process_lines(config: Config, lines: List[str]):

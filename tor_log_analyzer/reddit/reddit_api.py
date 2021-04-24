@@ -1,3 +1,5 @@
+from time import sleep
+
 import praw
 from praw.models.reddit.submission import Submission
 from praw.models.reddit.comment import Comment, CommentForest
@@ -22,3 +24,23 @@ class RedditAPI():
     def get_target_submission(self, submission_full_name: str) -> Submission:
         tor_submission = self.get_tor_submission(submission_full_name)
         return self._reddit.submission(url=tor_submission.url)
+
+    def get_transcription(self, submission_full_name: str, username: str) -> Comment:
+        target_submission = self.get_target_submission(submission_full_name)
+        print(f"https://www.reddit.com{target_submission.permalink}", end="")
+        comments = target_submission.comments
+        comment_len = len(comments)
+
+        while True:
+            comment_list = comments.list()
+            for comment in comment_list:
+                if comment.author == username:
+                    return comment
+
+            comments.replace_more()
+
+            if len(comments) == comment_len:
+                break
+
+            comment_len = len(comments)
+            sleep(1)
