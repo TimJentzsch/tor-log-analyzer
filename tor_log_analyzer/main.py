@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from tor_log_analyzer.done_info import DoneInfo
 from tor_log_analyzer.config import Config
+from tor_log_analyzer.reddit.reddit_api import RedditAPI
 
 
 def done_line_to_dict(line: str) -> DoneInfo:
@@ -98,6 +99,11 @@ def generate_history(config: Config, dones: List[DoneInfo]):
     plt.savefig(f"{config.image_dir}/history.png")
     plt.close()
 
+def fetch_transcriptions(config: Config, dones: List[DoneInfo]):
+    reddit_api = RedditAPI(config)
+    submission = reddit_api.get_target_submission(dones[0].post_id)
+    print(submission.title)
+
 
 def process_lines(config: Config, lines: List[str]):
     # Only consider "done"-ed posts
@@ -115,6 +121,7 @@ def process_lines(config: Config, lines: List[str]):
 
     generate_user_stats(config, dones)
     generate_history(config, dones)
+    fetch_transcriptions(config, dones)
 
 
 def configure_plot_style(config: Config):
