@@ -104,12 +104,13 @@ def generate_history(config: Config, dones: List[DoneInfo]):
 
 def fetch_transcriptions(config: Config, dones: List[DoneInfo]):
     cache = {}
-    with open(f"{config.cache_dir}/transcriptions.json", encoding='utf8') as f:
-        cache = json.load(f)
+    if not config.no_cache:
+        with open(f"{config.cache_dir}/transcriptions.json", encoding='utf8') as f:
+            cache = json.load(f)
 
     reddit_api = RedditAPI(config)
     transcriptions = {}
-    with click.progressbar(dones, label="Fetching transcriptions") as bar:
+    with click.progressbar(dones, label="Fetching transcriptions: ") as bar:
         for done in bar:
             # Try to get from cache
             if done.post_id in cache:

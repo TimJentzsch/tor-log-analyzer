@@ -32,7 +32,7 @@ class RedditAPI():
         while True:
             comment_list = comments.list()
             for comment in comment_list:
-                if comment is Comment and comment.author == username:
+                if isinstance(comment, Comment) and comment.author == username:
                     return comment
 
             comments.replace_more()
@@ -42,3 +42,5 @@ class RedditAPI():
 
             comment_len = len(comments)
             sleep(1)
+
+        return None

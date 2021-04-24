@@ -6,7 +6,7 @@ from praw.models.reddit.comment import Comment
 class Transcription():
     def __init__(self, comment: Comment):
         self._id = comment.id
-        self._subreddit = comment.subreddit.name
+        self._subreddit = comment.subreddit.display_name
         self._author = comment.author.name
         self._body = comment.body
 

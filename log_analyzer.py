@@ -82,7 +82,7 @@ def config_from_options(
 @click.option("-i", "--input", "input_file", help="the path to the input file", type=str)
 @click.option("-o", "--output", "output_dir", help="the path to the output folder", type=str)
 @click.option("-t", "--top-count", "top_count", help="the number of entires in the top X diagrams", type=int)
-@click.option("--cache/--no-cache", "no_cache", default=True, help="disables the cache", type=bool)
+@click.option("--no-cache/--cache", "no_cache", default=False, help="disables the cache", type=bool)
 # Auth options
 @click.option("--auth.clientID", "auth_client_id", help="the client id assigned by reddit", type=str)
 @click.option("--auth.clientSecret", "auth_client_secret", help="the client secret assigned by reddit", type=str)
