@@ -3,6 +3,7 @@ from os import makedirs
 import json
 from dateutil import parser
 import matplotlib.pyplot as plt
+import click
 
 from tor_log_analyzer.done_info import DoneInfo
 from tor_log_analyzer.transcription import Transcription
@@ -108,23 +109,22 @@ def fetch_transcriptions(config: Config, dones: List[DoneInfo]):
 
     reddit_api = RedditAPI(config)
     transcriptions = {}
-    print("Fetching transcriptions:")
-    for i, done in enumerate(dones):
-        print(f"{' ' * 300}\r    [{i+1}/{len(dones)}]: ", end="")
-        # Try to get from cache
-        if done.post_id in cache:
-            transcriptions[done.post_id] = cache[done.post_id]
-        # Get transcription from Reddit
-        else:
-            transcription_comment = reddit_api.get_transcription(
-                done.post_id, done.username)
-            if transcription_comment is None:
-                continue
-            transcription = Transcription(transcription_comment)
-            transcriptions[done.post_id] = transcription.to_dict()
+    with click.progressbar(dones, label="Fetching transcriptions") as bar:
+        for done in bar:
+            # Try to get from cache
+            if done.post_id in cache:
+                transcriptions[done.post_id] = cache[done.post_id]
+            # Get transcription from Reddit
+            else:
+                transcription_comment = reddit_api.get_transcription(
+                    done.post_id, done.username)
+                if transcription_comment is None:
+                    continue
+                transcription = Transcription(transcription_comment)
+                transcriptions[done.post_id] = transcription.to_dict()
 
-        with open(f"{config.cache_dir}/transcriptions.json", "w", encoding='utf8') as f:
-            json.dump(transcriptions, f, ensure_ascii=False, indent=2)
+            with open(f"{config.cache_dir}/transcriptions.json", "w", encoding='utf8') as f:
+                json.dump(transcriptions, f, ensure_ascii=False, indent=2)
 
 
 def process_lines(config: Config, lines: List[str]):

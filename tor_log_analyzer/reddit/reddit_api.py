@@ -2,11 +2,10 @@ from time import sleep
 
 import praw
 from praw.models.reddit.submission import Submission
-from praw.models.reddit.comment import Comment, CommentForest
+from praw.models.reddit.comment import Comment
 
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.reddit import __user_agent__
-from tor_log_analyzer.reddit.config_token_manager import ConfigTokenManager
 
 
 class RedditAPI():
@@ -27,14 +26,13 @@ class RedditAPI():
 
     def get_transcription(self, submission_full_name: str, username: str) -> Comment:
         target_submission = self.get_target_submission(submission_full_name)
-        print(f"https://www.reddit.com{target_submission.permalink}", end="")
         comments = target_submission.comments
         comment_len = len(comments)
 
         while True:
             comment_list = comments.list()
             for comment in comment_list:
-                if comment.author == username:
+                if comment is Comment and comment.author == username:
                     return comment
 
             comments.replace_more()
