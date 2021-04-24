@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import json
 import yaml
-import traceback
 import click
 
 from tor_log_analyzer import __project_name__, __version__, __description__
@@ -63,6 +62,7 @@ def config_from_options(
         "input-file": input_file,
         "output-dir": output_dir,
         "top-count": top_count,
+        "no-cache": no_cache,
         "auth": merged_auth_config_dict,
         "colors": merged_color_config_dict,
     })
@@ -74,29 +74,34 @@ def config_from_options(
 
 
 @click.command()
+# Meta options
+@click.option("--version", is_flag=True, default=False, help="Display the program version.")
+@click.option("--about", is_flag=True, default=False, help="Display info about the program.")
 # General options
 @click.option("-c", "--config", "config_file", help="path to a .json, .yml or .yaml config file. Can be used as a template, all other options override this file", type=str)
 @click.option("-i", "--input", "input_file", help="the path to the input file", type=str)
 @click.option("-o", "--output", "output_dir", help="the path to the output folder", type=str)
 @click.option("-t", "--top-count", "top_count", help="the number of entires in the top X diagrams", type=int)
-@click.option("--no-cache", "no_cache", help="disables the cache", type=bool)
-# Auth
+@click.option("--cache/--no-cache", "no_cache", default=True, help="disables the cache", type=bool)
+# Auth options
 @click.option("--auth.clientID", "auth_client_id", help="the client id assigned by reddit", type=str)
 @click.option("--auth.clientSecret", "auth_client_secret", help="the client secret assigned by reddit", type=str)
-# Colors
+# Color options
 @click.option("--colors.primary", "colors_primary", help="the primary color to use in the charts", type=str)
 @click.option("--colors.secondary", "colors_secondary",  help="the secondary color to use in the charts", type=str)
 @click.option("--colors.background", "colors_background",  help="the background color to use in the charts", type=str)
 @click.option("--colors.text", "colors_text",  help="the text color to use on the background color", type=str)
 @click.option("--colors.line", "colors_line",  help="the color to use for the chart lines", type=str)
 def log_analyzer(
-        # General
+        version=False, about=False,
         config_file=None, input_file=None, output_dir=None, top_count=None, no_cache=None,
-        # Auth
         auth_client_id=None, auth_client_secret=None,
-        # Colors
         colors_primary=None, colors_secondary=None, colors_background=None, colors_text=None, colors_line=None
 ):
+    if version or about:
+        click.echo(f"{__project_name__}, version v{__version__}\n\n{__description__}")
+        return 0
+
     config = config_from_options(
         config_file, input_file, output_dir, top_count, no_cache,
         auth_client_id, auth_client_secret,
