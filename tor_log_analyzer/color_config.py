@@ -4,9 +4,11 @@ from tor_log_analyzer.util import clean_dict
 
 
 class ColorConfig:
-    def __init__(self, primary: str, secondary: str, background: str, text: str, line: str):
+    def __init__(self, primary: str, secondary: str, tertiary: str,
+                 background: str, text: str, line: str):
         self._primary = primary
         self._secondary = secondary
+        self._tertiary = tertiary
         self._background = background
         self._text = text
         self._line = line
@@ -18,6 +20,10 @@ class ColorConfig:
     @property
     def secondary(self) -> str:
         return self._secondary
+    
+    @property
+    def tertiary(self) -> str:
+        return self._tertiary
 
     @property
     def background(self) -> str:
@@ -35,6 +41,7 @@ class ColorConfig:
         return {
             "primary": self.primary,
             "secondary": self.secondary,
+            "tertiary": self.tertiary,
             "background": self.background,
             "text": self.text,
             "line": self.line,
@@ -44,6 +51,7 @@ class ColorConfig:
 DEFAULT_COLORS = ColorConfig(
     primary="#80cbc4",
     secondary="#438078",
+    tertiary="#427f58",
     background="#232323",
     text="#fff",
     line="#484848",
@@ -57,10 +65,12 @@ def colors_from_dict(config: Dict) -> ColorConfig:
     return ColorConfig(
         primary=config["primary"],
         secondary=config["secondary"],
+        tertiary=config["tertiary"],
         background=config["background"],
         text=config["text"],
         line=config["line"],
     )
+
 
 def colors_from_dict_or_defaults(config: Dict) -> ColorConfig:
     """

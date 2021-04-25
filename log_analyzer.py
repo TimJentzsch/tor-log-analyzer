@@ -15,7 +15,8 @@ def config_from_options(
         # Auth
         auth_client_id, auth_client_secret,
         # Colors
-        colors_primary, colors_secondary, colors_background, colors_text, colors_line
+        colors_primary, colors_secondary, colors_tertiary,
+        colors_background, colors_text, colors_line
 ) -> Config:
     """
     Creates the config from the app parameters.
@@ -49,6 +50,7 @@ def config_from_options(
     color_config_dict = clean_dict({
         "primary": colors_primary,
         "secondary": colors_secondary,
+        "tertiary": colors_tertiary,
         "background": colors_background,
         "text": colors_text,
         "line": colors_line,
@@ -89,6 +91,7 @@ def config_from_options(
 # Color options
 @click.option("--colors.primary", "colors_primary", help="the primary color to use in the charts", type=str)
 @click.option("--colors.secondary", "colors_secondary",  help="the secondary color to use in the charts", type=str)
+@click.option("--colors.tertiary", "colors_tertiary",  help="the tertiary color to use in the charts", type=str)
 @click.option("--colors.background", "colors_background",  help="the background color to use in the charts", type=str)
 @click.option("--colors.text", "colors_text",  help="the text color to use on the background color", type=str)
 @click.option("--colors.line", "colors_line",  help="the color to use for the chart lines", type=str)
@@ -96,7 +99,8 @@ def log_analyzer(
         version=False, about=False,
         config_file=None, input_file=None, output_dir=None, top_count=None, no_cache=None,
         auth_client_id=None, auth_client_secret=None,
-        colors_primary=None, colors_secondary=None, colors_background=None, colors_text=None, colors_line=None
+        colors_primary=None, colors_secondary=None, colors_tertiary=None,
+        colors_background=None, colors_text=None, colors_line=None
 ):
     if version or about:
         click.echo(f"{__project_name__}, version v{__version__}\n\n{__description__}")
@@ -105,7 +109,8 @@ def log_analyzer(
     config = config_from_options(
         config_file, input_file, output_dir, top_count, no_cache,
         auth_client_id, auth_client_secret,
-        colors_primary, colors_secondary, colors_background, colors_text, colors_line
+        colors_primary, colors_secondary, colors_tertiary,
+        colors_background, colors_text, colors_line
     )
 
     analyze_logs(config)
