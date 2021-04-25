@@ -35,6 +35,36 @@ def extract_format_and_type(header: str):
         t_type = t_format
     if l_includes("GIF", t_type):
         t_format = "GIF"
+    
+    # Merge common types
+    if l_includes("Twitter", t_type):
+        t_type = "Twitter"
+    if l_includes("Facebook", t_type):
+        t_type = "Facebook"
+    if l_includes("Tumblr", t_type):
+        t_type = "Tumblr"
+    if l_includes("Reddit", t_type):
+        t_type = "Reddit"
+    if l_includes("Picture", t_type) or l_includes("Photo", t_type) or l_includes("Photogra", t_type):
+        t_type = "Piture"
+    if l_includes("Review", t_type):
+        t_type = "Review"
+    if l_includes("YouTube", t_type):
+        t_type = "YouTube"
+    if l_includes("Code", t_type):
+        t_type = "Code"
+    if l_includes("Chat", t_type) or l_includes("Message", t_type) or l_includes("Discord", t_type) or l_includes("Email", t_type) or l_includes("E-mail", t_type):
+        t_type = "Chat"
+    if l_includes("Meme", t_type):
+        t_type = "Meme"
+    if l_includes("Social Media", t_type):
+        t_type = "Social Media"
+    if l_includes("Image", t_type):
+        t_type = "Image"
+    if l_includes("Video", t_type):
+        t_type = "Video"
+    if l_includes("Text", t_type):
+        t_type = "Text"
 
     return (t_format, t_type)
 
