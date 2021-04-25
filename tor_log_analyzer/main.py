@@ -283,7 +283,8 @@ def generate_format_stats(config: Config, transcriptions: List[Transcription]):
     labels = [entry[0] for entry in compressed_data]
     data = [entry[1] for entry in compressed_data]
 
-    colors = [config.colors.primary for _ in range(len(top_list))]
+    colors = [config.colors.primary, config.colors.secondary, config.colors.tertiary] * (len(top_list) // 3 + 1)
+    colors.reverse()
 
     if len(sorted_data) > top_count:
         colors = [config.colors.secondary] + colors
