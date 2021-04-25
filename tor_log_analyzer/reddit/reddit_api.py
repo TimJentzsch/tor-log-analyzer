@@ -5,7 +5,7 @@ from praw.models.reddit.submission import Submission
 from praw.models.reddit.comment import Comment
 
 from tor_log_analyzer.config import Config
-from tor_log_analyzer.reddit import __user_agent__
+from tor_log_analyzer.reddit import __user_agent__, __tor_link__
 
 
 class RedditAPI():
@@ -33,7 +33,8 @@ class RedditAPI():
             comment_list = comments.list()
             for comment in comment_list:
                 if isinstance(comment, Comment) and comment.author == username:
-                    return comment
+                    if __tor_link__ in comment.body and "&#32;" in comment.body:
+                        return comment
 
             comments.replace_more()
 

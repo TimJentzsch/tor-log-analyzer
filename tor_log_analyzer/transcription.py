@@ -25,8 +25,10 @@ def extract_format_and_type(header: str):
     """
 
     # Extract format and type from header
-    pattern = re.compile(r"\*(?P<t_format>[\w ]*[\w]+)\s*Transcription:\s*(?P<t_type>[\w]+[\w ]*)?\*", re.IGNORECASE)
+    pattern = re.compile(r"\*(?P<t_format>[\w ]*[\w]+)\s*Transcription:?\s*(?P<t_type>[\w]+.*)?\*", re.IGNORECASE)
     match = pattern.match(header)
+    if match is None:
+        return (None, None)
     t_format = match.group("t_format")
     t_type = match.group("t_type")
     if t_type is None:

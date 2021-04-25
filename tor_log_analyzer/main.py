@@ -190,6 +190,64 @@ def generate_sub_stats(config: Config, transcriptions: List[Transcription]):
     plt.close()
 
 
+def generate_type_stats(config: Config, transcriptions: List[Transcription]):
+    type_data = {}
+
+    for tr in transcriptions:
+        t_type = tr.t_type
+        if t_type in type_data:
+            type_data[t_type] += 1
+        else:
+            type_data[t_type] = 1
+
+    with open(f"{config.cache_dir}/types.json", "w") as f:
+        dumps = json.dumps(type_data, indent=2)
+        f.write(dumps + "\n")
+
+    top_count = config.top_count
+
+    # Sort by types
+    sorted_data: List[Tuple[str, int]] = [
+        (f"{t_type}", type_data[t_type]) for t_type in type_data]
+    sorted_data.sort(key=lambda e: e[1], reverse=True)
+    # Extract the top subs
+    top_list = sorted_data[:top_count]
+    top_list.reverse()
+
+    compressed_data: List[Tuple[str, int]] = top_list
+
+    if len(sorted_data) > top_count:
+        # Aggregate the rest of the subs that didn't make it in the top to a single entry
+        rest: List[Tuple[str, int]] = [
+            ("Other Types", sum([entry[1] for entry in sorted_data[top_count:]]))]
+        compressed_data = rest + top_list
+
+    labels = [entry[0] for entry in compressed_data]
+    data = [entry[1] for entry in compressed_data]
+
+    colors = [config.colors.primary for _ in range(len(top_list))]
+
+    if len(sorted_data) > top_count:
+        colors = [config.colors.secondary] + colors
+
+    plt.barh(labels, data, color=colors)
+    plt.ylabel("Type")
+    plt.xlabel("Transcriptions")
+    plt.title(f"Top {top_count} Types")
+
+    # Annotate data
+    for x, y in zip(data, labels):
+        plt.annotate(x,  # label with count
+                     (x, y),
+                     textcoords="offset points",
+                     xytext=(3, 0),
+                     ha="left",
+                     va="center")
+
+    plt.savefig(f"{config.image_dir}/types.png")
+    plt.close()
+
+
 def process_lines(config: Config, lines: List[str]):
     # Only consider "done"-ed posts
     done_lines = [
@@ -208,6 +266,7 @@ def process_lines(config: Config, lines: List[str]):
     generate_history(config, dones)
     transcriptions = fetch_transcriptions(config, dones)
     generate_sub_stats(config, transcriptions)
+    generate_type_stats(config, transcriptions)
 
 
 def configure_plot_style(config: Config):
