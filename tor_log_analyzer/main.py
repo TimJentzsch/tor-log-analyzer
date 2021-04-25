@@ -93,6 +93,7 @@ def generate_history(config: Config, dones: List[DoneInfo]):
     dates = [entry[0] for entry in history_data]
     data = [entry[1] for entry in history_data]
 
+    plt.grid()
     plt.plot(dates, data, color=config.colors.primary)
     plt.xlabel("Time")
     plt.ylabel("Total Transcriptions")
@@ -345,6 +346,8 @@ def configure_plot_style(config: Config):
     plt.rcParams['xtick.labelcolor'] = colors.text
     plt.rcParams['ytick.color'] = colors.line
     plt.rcParams['ytick.labelcolor'] = colors.text
+    plt.rcParams['grid.color'] = colors.line
+    plt.rcParams['grid.alpha'] = 0.8
 
 
 def analyze_logs(config: Config):
