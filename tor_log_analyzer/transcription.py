@@ -120,6 +120,15 @@ class Transcription():
     @property
     def t_type(self) -> str:
         return self._t_type
+    
+    @property
+    def characters(self) -> str:
+        return len(self.content)
+    
+    @property
+    def words(self) -> str:
+        parts = self.content.split(" ")
+        return len([word for word in parts if len(word.strip()) > 0])
 
     def to_dict(self) -> Dict:
         return {
