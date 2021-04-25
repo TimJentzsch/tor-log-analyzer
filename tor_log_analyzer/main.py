@@ -248,6 +248,54 @@ def generate_type_stats(config: Config, transcriptions: List[Transcription]):
     plt.close()
 
 
+def generate_format_stats(config: Config, transcriptions: List[Transcription]):
+    format_data = {}
+
+    for tr in transcriptions:
+        t_format = tr.t_format
+        if t_format in format_data:
+            format_data[t_format] += 1
+        else:
+            format_data[t_format] = 1
+
+    with open(f"{config.cache_dir}/formats.json", "w") as f:
+        dumps = json.dumps(format_data, indent=2)
+        f.write(dumps + "\n")
+
+    top_count = config.top_count
+
+    # Sort by types
+    sorted_data: List[Tuple[str, int]] = [
+        (f"{t_format}", format_data[t_format]) for t_format in format_data]
+    sorted_data.sort(key=lambda e: e[1], reverse=True)
+    # Extract the top subs
+    top_list = sorted_data[:top_count]
+    top_list.reverse()
+
+    compressed_data: List[Tuple[str, int]] = top_list
+
+    if len(sorted_data) > top_count:
+        # Aggregate the rest of the subs that didn't make it in the top to a single entry
+        rest: List[Tuple[str, int]] = [
+            ("Other Formats", sum([entry[1] for entry in sorted_data[top_count:]]))]
+        compressed_data = rest + top_list
+
+    labels = [entry[0] for entry in compressed_data]
+    data = [entry[1] for entry in compressed_data]
+
+    colors = [config.colors.primary for _ in range(len(top_list))]
+
+    if len(sorted_data) > top_count:
+        colors = [config.colors.secondary] + colors
+
+    plt.pie(data, labels=labels, autopct='%1.f%%', colors=colors)
+    plt.title(f"Top {top_count} Formats")
+    plt.gca().axis('equal')
+
+    plt.savefig(f"{config.image_dir}/formats.png")
+    plt.close()
+
+
 def process_lines(config: Config, lines: List[str]):
     # Only consider "done"-ed posts
     done_lines = [
@@ -267,6 +315,7 @@ def process_lines(config: Config, lines: List[str]):
     transcriptions = fetch_transcriptions(config, dones)
     generate_sub_stats(config, transcriptions)
     generate_type_stats(config, transcriptions)
+    generate_format_stats(config, transcriptions)
 
 
 def configure_plot_style(config: Config):
