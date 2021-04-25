@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import click
 
 from tor_log_analyzer.done_info import DoneInfo
-from tor_log_analyzer.transcription import Transcription
+from tor_log_analyzer.transcription import Transcription, transcription_from_comment, transcription_from_dict
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.reddit.reddit_api import RedditAPI
 
@@ -102,30 +102,92 @@ def generate_history(config: Config, dones: List[DoneInfo]):
     plt.close()
 
 
-def fetch_transcriptions(config: Config, dones: List[DoneInfo]):
+def fetch_transcriptions(config: Config, dones: List[DoneInfo]) -> List[Transcription]:
     cache = {}
     if not config.no_cache:
         with open(f"{config.cache_dir}/transcriptions.json", encoding='utf8') as f:
-            cache = json.load(f)
+            try:
+                cache = json.load(f)
+            except json.JSONDecodeError:
+                cache = {}
 
     reddit_api = RedditAPI(config)
     transcriptions = {}
-    with click.progressbar(dones, label="Fetching transcriptions: ") as bar:
-        for done in bar:
+    with click.progressbar(dones, label="Fetching transcriptions: ") as pbar:
+        for done in pbar:
             # Try to get from cache
             if done.post_id in cache:
-                transcriptions[done.post_id] = cache[done.post_id]
+                transcriptions[done.post_id] = transcription_from_dict(cache[done.post_id])
             # Get transcription from Reddit
             else:
                 transcription_comment = reddit_api.get_transcription(
                     done.post_id, done.username)
                 if transcription_comment is None:
                     continue
-                transcription = Transcription(transcription_comment)
-                transcriptions[done.post_id] = transcription.to_dict()
+                transcriptions[done.post_id] = transcription_from_comment(transcription_comment)
 
             with open(f"{config.cache_dir}/transcriptions.json", "w", encoding='utf8') as f:
-                json.dump(transcriptions, f, ensure_ascii=False, indent=2)
+                json.dump(dict([(key, transcriptions[key].to_dict()) for key in transcriptions]), f, ensure_ascii=False, indent=2)
+
+    return [transcriptions[key] for key in transcriptions]
+
+
+def generate_sub_stats(config: Config, transcriptions: List[Transcription]):
+    sub_data = {}
+
+    for tr in transcriptions:
+        sub = tr.subreddit
+        if sub in sub_data:
+            sub_data[sub] += 1
+        else:
+            sub_data[sub] = 1
+
+    with open(f"{config.cache_dir}/sub_gamma.json", "w") as f:
+        dumps = json.dumps(sub_data, indent=2)
+        f.write(dumps + "\n")
+
+    top_count = config.top_count
+
+    # Sort by sub gamma
+    sorted_data: List[Tuple[str, int]] = [
+        (f"r/{sub}", sub_data[sub]) for sub in sub_data]
+    sorted_data.sort(key=lambda e: e[1], reverse=True)
+    # Extract the top subs
+    top_list = sorted_data[:top_count]
+    top_list.reverse()
+
+    compressed_data: List[Tuple[str, int]] = top_list
+
+    if len(sorted_data) > top_count:
+        # Aggregate the rest of the subs that didn't make it in the top to a single entry
+        rest: List[Tuple[str, int]] = [
+            ("Other Subreddits", sum([entry[1] for entry in sorted_data[top_count:]]))]
+        compressed_data = rest + top_list
+
+    labels = [entry[0] for entry in compressed_data]
+    data = [entry[1] for entry in compressed_data]
+
+    colors = [config.colors.primary for _ in range(len(top_list))]
+
+    if len(sorted_data) > top_count:
+        colors = [config.colors.secondary] + colors
+
+    plt.barh(labels, data, color=colors)
+    plt.ylabel("Subreddit")
+    plt.xlabel("Transcriptions")
+    plt.title(f"Top {top_count} Subreddits")
+
+    # Annotate data
+    for x, y in zip(data, labels):
+        plt.annotate(x,  # label with gamma
+                     (x, y),
+                     textcoords="offset points",
+                     xytext=(3, 0),
+                     ha="left",
+                     va="center")
+
+    plt.savefig(f"{config.image_dir}/sub_gamma.png")
+    plt.close()
 
 
 def process_lines(config: Config, lines: List[str]):
@@ -144,7 +206,8 @@ def process_lines(config: Config, lines: List[str]):
 
     generate_user_stats(config, dones)
     generate_history(config, dones)
-    fetch_transcriptions(config, dones)
+    transcriptions = fetch_transcriptions(config, dones)
+    generate_sub_stats(config, transcriptions)
 
 
 def configure_plot_style(config: Config):
