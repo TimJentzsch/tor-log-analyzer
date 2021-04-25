@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Dict
 
 
-class DoneInfo:
+class DoneData:
     def __init__(self, time: datetime, post_id: str, username: str):
         self._time = time
         self._post_id = post_id

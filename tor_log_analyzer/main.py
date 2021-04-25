@@ -5,13 +5,14 @@ from dateutil import parser
 import matplotlib.pyplot as plt
 import click
 
-from tor_log_analyzer.done_info import DoneInfo
+from tor_log_analyzer.done_data import DoneData
 from tor_log_analyzer.transcription import Transcription, transcription_from_comment, transcription_from_dict
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.reddit.reddit_api import RedditAPI
+from tor_log_analyzer.data.user_gamma_data import UserGammaData
 
 
-def done_line_to_dict(line: str) -> DoneInfo:
+def done_line_to_dict(line: str) -> DoneData:
     tokens = line.split(" ")
 
     # Extract the timestamp
@@ -22,28 +23,28 @@ def done_line_to_dict(line: str) -> DoneInfo:
     # Extract username
     username = tokens[13]
 
-    return DoneInfo(time, post_id, username)
+    return DoneData(time, post_id, username)
 
 
-def generate_user_stats(config: Config, dones: List[DoneInfo]):
-    user_data = {}
-
+def process_user_gamma_data(config: Config, dones: List[DoneData]) -> UserGammaData:
+    user_gamma_data = UserGammaData()
+    
     for done in dones:
-        user = done.username
-        if user in user_data:
-            user_data[user] += 1
-        else:
-            user_data[user] = 1
+        user_gamma_data[done.username] += 1
 
     with open(f"{config.cache_dir}/user_gamma.json", "w") as f:
-        dumps = json.dumps(user_data, indent=2)
+        dumps = json.dumps(user_gamma_data.to_dict(), indent=2)
         f.write(dumps + "\n")
+    
+    return user_gamma_data
 
+
+def generate_user_stats(config: Config, user_gamma_data: UserGammaData):
     top_count = config.top_count
 
     # Sort by user gamma
     sorted_data: List[Tuple[str, int]] = [
-        (f"u/{username}", user_data[username]) for username in user_data]
+        (f"u/{username}", user_gamma_data[username]) for username in user_gamma_data]
     sorted_data.sort(key=lambda e: e[1], reverse=True)
     # Extract the top users
     top_list = sorted_data[:top_count]
@@ -83,7 +84,7 @@ def generate_user_stats(config: Config, dones: List[DoneInfo]):
     plt.close()
 
 
-def generate_history(config: Config, dones: List[DoneInfo]):
+def generate_history(config: Config, dones: List[DoneData]):
     history_data = []
 
     for i, val in enumerate(dones):
@@ -103,7 +104,7 @@ def generate_history(config: Config, dones: List[DoneInfo]):
     plt.close()
 
 
-def fetch_transcriptions(config: Config, dones: List[DoneInfo]) -> List[Transcription]:
+def fetch_transcriptions(config: Config, dones: List[DoneData]) -> List[Transcription]:
     cache = {}
     if not config.no_cache:
         with open(f"{config.cache_dir}/transcriptions.json", encoding='utf8') as f:
@@ -318,7 +319,8 @@ def process_lines(config: Config, lines: List[str]):
         dumps = json.dumps([done.to_dict() for done in dones], indent=2)
         f.write(dumps + "\n")
 
-    generate_user_stats(config, dones)
+    user_gamma_data = process_user_gamma_data(config, dones)
+    generate_user_stats(config, user_gamma_data)
     generate_history(config, dones)
     transcriptions = fetch_transcriptions(config, dones)
     generate_sub_stats(config, transcriptions)
