@@ -15,3 +15,10 @@ def clean_dict(d: Dict) -> Dict:
             cleaned_dict[key] = value
 
     return cleaned_dict
+
+def l_includes(word: str, string: str):
+    """
+    Checks if the word is included in the string, ignoring casing.
+    """
+
+    return word.lower() in string.lower()
