@@ -16,8 +16,8 @@ class AuthConfig:
 
     def to_dict(self) -> Dict:
         return {
-            "clientID": self.client_id,
-            "clientSecret": self.client_secret,
+            "client-id": self.client_id,
+            "client-secret": self.client_secret,
         }
 
 
@@ -32,6 +32,6 @@ def auth_from_dict(config: Dict) -> AuthConfig:
     Creates a color configuration based on the values in a dictionary.
     """
     return AuthConfig(
-        client_id=config["clientID"],
-        client_secret=config["clientSecret"]
+        client_id=config["client-id"],
+        client_secret=config["client-secret"]
     )
