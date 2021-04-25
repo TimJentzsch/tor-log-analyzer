@@ -117,17 +117,20 @@ def fetch_transcriptions(config: Config, dones: List[DoneInfo]) -> List[Transcri
         for done in pbar:
             # Try to get from cache
             if done.post_id in cache:
-                transcriptions[done.post_id] = transcription_from_dict(cache[done.post_id])
+                transcriptions[done.post_id] = transcription_from_dict(
+                    cache[done.post_id])
             # Get transcription from Reddit
             else:
                 transcription_comment = reddit_api.get_transcription(
                     done.post_id, done.username)
                 if transcription_comment is None:
                     continue
-                transcriptions[done.post_id] = transcription_from_comment(transcription_comment)
+                transcriptions[done.post_id] = transcription_from_comment(
+                    transcription_comment)
 
             with open(f"{config.cache_dir}/transcriptions.json", "w", encoding='utf8') as f:
-                json.dump(dict([(key, transcriptions[key].to_dict()) for key in transcriptions]), f, ensure_ascii=False, indent=2)
+                json.dump(dict([(key, transcriptions[key].to_dict())
+                                for key in transcriptions]), f, ensure_ascii=False, indent=2)
 
     return [transcriptions[key] for key in transcriptions]
 
@@ -280,16 +283,19 @@ def generate_format_stats(config: Config, transcriptions: List[Transcription]):
             ("Other Formats", sum([entry[1] for entry in sorted_data[top_count:]]))]
         compressed_data = rest + top_list
 
-    labels = [entry[0] for entry in compressed_data]
     data = [entry[1] for entry in compressed_data]
+    total = sum(data)
+    labels = [
+        f"{entry[0]}\n{entry[1]} ({round(entry[1] * 100 / total)}%)" for entry in compressed_data]
 
-    colors = [config.colors.primary, config.colors.secondary, config.colors.tertiary] * (len(top_list) // 3 + 1)
+    colors = [config.colors.primary, config.colors.secondary,
+              config.colors.tertiary] * (len(top_list) // 3 + 1)
     colors.reverse()
 
     if len(sorted_data) > top_count:
         colors = [config.colors.secondary] + colors
 
-    plt.pie(data, labels=labels, autopct='%1.f%%', colors=colors)
+    plt.pie(data, labels=labels, colors=colors)
     plt.title(f"Top {top_count} Formats")
     plt.gca().axis('equal')
 
