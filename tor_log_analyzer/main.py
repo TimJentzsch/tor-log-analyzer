@@ -10,6 +10,7 @@ from tor_log_analyzer.transcription import Transcription, transcription_from_com
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.reddit.reddit_api import RedditAPI
 from tor_log_analyzer.data.user_gamma_data import UserGammaData
+from tor_log_analyzer.data.sub_gamma_data import SubGammaData
 
 
 def done_line_to_dict(line: str) -> DoneData:
@@ -104,7 +105,7 @@ def generate_history(config: Config, dones: List[DoneData]):
     plt.close()
 
 
-def fetch_transcriptions(config: Config, dones: List[DoneData]) -> List[Transcription]:
+def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Transcription]:
     cache = {}
     if not config.no_cache:
         with open(f"{config.cache_dir}/transcriptions.json", encoding='utf8') as f:
@@ -137,25 +138,24 @@ def fetch_transcriptions(config: Config, dones: List[DoneData]) -> List[Transcri
     return [transcriptions[key] for key in transcriptions]
 
 
-def generate_sub_stats(config: Config, transcriptions: List[Transcription]):
-    sub_data = {}
+def process_sub_gamma_data(config: Config, transcriptions: List[Transcription]) -> SubGammaData:
+    sub_gamma_data = SubGammaData()
 
     for tr in transcriptions:
-        sub = tr.subreddit
-        if sub in sub_data:
-            sub_data[sub] += 1
-        else:
-            sub_data[sub] = 1
+        sub_gamma_data[tr.subreddit] += 1
 
     with open(f"{config.cache_dir}/sub_gamma.json", "w") as f:
-        dumps = json.dumps(sub_data, indent=2)
+        dumps = json.dumps(sub_gamma_data.to_dict(), indent=2)
         f.write(dumps + "\n")
+    
+    return sub_gamma_data
 
+def generate_sub_stats(config: Config, sub_gamma_data: SubGammaData):
     top_count = config.top_count
 
     # Sort by sub gamma
     sorted_data: List[Tuple[str, int]] = [
-        (f"r/{sub}", sub_data[sub]) for sub in sub_data]
+        (f"r/{sub}", sub_gamma_data[sub]) for sub in sub_gamma_data]
     sorted_data.sort(key=lambda e: e[1], reverse=True)
     # Extract the top subs
     top_list = sorted_data[:top_count]
@@ -320,12 +320,14 @@ def process_lines(config: Config, lines: List[str]):
         f.write(dumps + "\n")
 
     user_gamma_data = process_user_gamma_data(config, dones)
-    generate_user_stats(config, user_gamma_data)
+    transcription_data = process_transcription_data(config, dones)
+    sub_gamma_data = process_sub_gamma_data(config, transcription_data)
+
     generate_history(config, dones)
-    transcriptions = fetch_transcriptions(config, dones)
-    generate_sub_stats(config, transcriptions)
-    generate_type_stats(config, transcriptions)
-    generate_format_stats(config, transcriptions)
+    generate_user_stats(config, user_gamma_data)
+    generate_sub_stats(config, sub_gamma_data)
+    generate_type_stats(config, transcription_data)
+    generate_format_stats(config, transcription_data)
 
 
 def configure_plot_style(config: Config):
