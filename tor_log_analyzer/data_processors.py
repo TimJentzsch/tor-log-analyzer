@@ -80,7 +80,7 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
 
     reddit_api = RedditAPI(config)
     transcriptions = {}
-    with click.progressbar(dones, label="Fetching transcriptions: ") as pbar:
+    with click.progressbar(dones, label="  Fetching transcriptions: ") as pbar:
         for done in pbar:
             # Try to get from cache
             if done.post_id in cache:
