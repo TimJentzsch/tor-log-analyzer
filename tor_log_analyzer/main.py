@@ -10,6 +10,7 @@ from tor_log_analyzer.transcription import Transcription, transcription_from_com
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.reddit.reddit_api import RedditAPI
 from tor_log_analyzer.data.user_gamma_data import UserGammaData
+from tor_log_analyzer.data.user_char_data import UserCharData
 from tor_log_analyzer.data.sub_gamma_data import SubGammaData
 
 
@@ -39,8 +40,20 @@ def process_user_gamma_data(config: Config, dones: List[DoneData]) -> UserGammaD
     
     return user_gamma_data
 
+def process_user_char_data(config: Config, transcriptions: List[Transcription]) -> UserCharData:
+    user_char_data = UserCharData()
 
-def generate_user_stats(config: Config, user_gamma_data: UserGammaData):
+    for transcription in transcriptions:
+        user_char_data[transcription.author] += transcription.characters
+    
+    with open(f"{config.cache_dir}/user_chars.json", "w") as f:
+        dumps = json.dumps(user_char_data.to_dict(), indent=2)
+        f.write(dumps + "\n")
+    
+    return user_char_data
+
+
+def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
     top_count = config.top_count
 
     # Sort by user gamma
@@ -70,7 +83,7 @@ def generate_user_stats(config: Config, user_gamma_data: UserGammaData):
     plt.barh(labels, data, color=colors)
     plt.ylabel("User")
     plt.xlabel("Transcriptions")
-    plt.title(f"Top {top_count} Contributors")
+    plt.title(f"Top {top_count} Contributors with the Most Transcriptions")
 
     # Annotate data
     for x, y in zip(data, labels):
@@ -180,7 +193,7 @@ def generate_sub_stats(config: Config, sub_gamma_data: SubGammaData):
     plt.barh(labels, data, color=colors)
     plt.ylabel("Subreddit")
     plt.xlabel("Transcriptions")
-    plt.title(f"Top {top_count} Subreddits")
+    plt.title(f"Top {top_count} Subreddits with the Most Transcriptions")
 
     # Annotate data
     for x, y in zip(data, labels):
@@ -304,6 +317,58 @@ def generate_format_stats(config: Config, transcriptions: List[Transcription]):
     plt.savefig(f"{config.image_dir}/formats.png")
     plt.close()
 
+def generate_user_count_length_stats(config: Config, user_gamma_data: UserGammaData, user_char_data: UserCharData):
+    counts = []
+    medians = []
+
+    for username in user_char_data:
+        if username in user_gamma_data:
+            counts.append(user_gamma_data[username])
+            medians.append(user_char_data[username].median)
+
+    plt.scatter(medians, counts, c=[config.colors.primary])
+    plt.ylabel("Transcription Count")
+    plt.xlabel("Transcription Length Median (Characters)")
+    plt.title("Transcription Length vs. Transcription Count")
+
+    plt.savefig(f"{config.image_dir}/user_count_length.png")
+    plt.close()
+
+def generate_user_max_length_stats(config: Config, user_char_data: UserCharData):
+    top_count = config.top_count
+
+    # Sort by user gamma
+    sorted_data: List[Tuple[str, int]] = [
+        (f"u/{username}", user_char_data[username].maximum) for username in user_char_data]
+    sorted_data.sort(key=lambda e: e[1], reverse=True)
+    # Extract the top users
+    top_list = sorted_data[:top_count]
+    top_list.reverse()
+
+    compressed_data: List[Tuple[str, int]] = top_list[:top_count]
+
+    labels = [entry[0] for entry in compressed_data]
+    data = [entry[1] for entry in compressed_data]
+
+    colors = [config.colors.primary for _ in range(len(top_list))]
+
+    plt.barh(labels, data, color=colors)
+    plt.ylabel("User")
+    plt.xlabel("Longest Transcription (Characters)")
+    plt.title(f"Top {top_count} Contributors with the Longest Transcriptions")
+
+    # Annotate data
+    for x, y in zip(data, labels):
+        plt.annotate(x,  # label with gamma
+                     (x, y),
+                     textcoords="offset points",
+                     xytext=(3, 0),
+                     ha="left",
+                     va="center")
+
+    plt.savefig(f"{config.image_dir}/user_max_length.png")
+    plt.close()
+
 
 def process_lines(config: Config, lines: List[str]):
     # Only consider "done"-ed posts
@@ -322,12 +387,15 @@ def process_lines(config: Config, lines: List[str]):
     user_gamma_data = process_user_gamma_data(config, dones)
     transcription_data = process_transcription_data(config, dones)
     sub_gamma_data = process_sub_gamma_data(config, transcription_data)
+    user_char_data = process_user_char_data(config, transcription_data)
 
     generate_history(config, dones)
-    generate_user_stats(config, user_gamma_data)
+    generate_user_gamma_stats(config, user_gamma_data)
     generate_sub_stats(config, sub_gamma_data)
     generate_type_stats(config, transcription_data)
     generate_format_stats(config, transcription_data)
+    generate_user_count_length_stats(config, user_gamma_data, user_char_data)
+    generate_user_max_length_stats(config, user_char_data)
 
 
 def configure_plot_style(config: Config):
