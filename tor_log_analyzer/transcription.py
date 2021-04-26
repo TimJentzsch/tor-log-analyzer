@@ -46,7 +46,7 @@ def extract_format_and_type(header: str):
     if l_includes("Reddit", t_type):
         t_type = "Reddit"
     if l_includes("Picture", t_type) or l_includes("Photo", t_type) or l_includes("Photogra", t_type):
-        t_type = "Piture"
+        t_type = "Picture"
     if l_includes("Review", t_type):
         t_type = "Review"
     if l_includes("YouTube", t_type):
