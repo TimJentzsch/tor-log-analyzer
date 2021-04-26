@@ -6,6 +6,7 @@ import click
 from tor_log_analyzer.data.sub_gamma_data import SubGammaData
 from tor_log_analyzer.data.user_char_data import UserCharData
 from tor_log_analyzer.data.user_gamma_data import UserGammaData
+from tor_log_analyzer.data.post_type_data import PostTypeData
 from tor_log_analyzer.data.done_data import DoneData
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.transcription import Transcription, transcription_from_comment, transcription_from_dict
@@ -113,3 +114,15 @@ def process_sub_gamma_data(config: Config, transcriptions: List[Transcription]) 
         f.write(dumps + "\n")
 
     return sub_gamma_data
+
+def process_post_type_data(config: Config, transcriptions: List[Transcription]) -> PostTypeData:
+    type_data = PostTypeData()
+
+    for tr in transcriptions:
+        type_data[tr.t_type] += 1
+
+    with open(f"{config.cache_dir}/post_types.json", "w") as f:
+        dumps = json.dumps(type_data.to_dict(), indent=2)
+        f.write(dumps + "\n")
+
+    return type_data

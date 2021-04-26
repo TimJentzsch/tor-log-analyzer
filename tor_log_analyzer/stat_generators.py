@@ -8,6 +8,7 @@ from tor_log_analyzer.config import Config
 from tor_log_analyzer.data.user_gamma_data import UserGammaData
 from tor_log_analyzer.data.user_char_data import UserCharData
 from tor_log_analyzer.data.sub_gamma_data import SubGammaData
+from tor_log_analyzer.data.post_type_data import PostTypeData
 
 
 def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
@@ -120,20 +121,7 @@ def generate_sub_stats(config: Config, sub_gamma_data: SubGammaData):
     plt.close()
 
 
-def generate_type_stats(config: Config, transcriptions: List[Transcription]):
-    type_data = {}
-
-    for tr in transcriptions:
-        t_type = tr.t_type
-        if t_type in type_data:
-            type_data[t_type] += 1
-        else:
-            type_data[t_type] = 1
-
-    with open(f"{config.cache_dir}/types.json", "w") as f:
-        dumps = json.dumps(type_data, indent=2)
-        f.write(dumps + "\n")
-
+def generate_type_stats(config: Config, type_data: PostTypeData):
     top_count = config.top_count
 
     # Sort by types
@@ -284,24 +272,27 @@ def generate_user_max_length_stats(config: Config, user_char_data: UserCharData)
     plt.close()
 
 
-def generate_general_stats(config: Config, user_gamma_data: UserGammaData, user_char_data: UserCharData, sub_gamma_data: SubGammaData, transcription_data: List[Transcription]):
+def generate_general_stats(config: Config, user_gamma_data: UserGammaData, sub_gamma_data: SubGammaData, transcription_data: List[Transcription], post_types: PostTypeData):
     stats = {
         "Participants": len(user_gamma_data),
         "Subreddits": len(sub_gamma_data),
+        "Post Types": len(post_types),
         "Transcriptions": len(transcription_data),
-        "Characters typed": sum(user_char_data[user].total for user in user_char_data)
+        "Words written": sum(tr.words for tr in transcription_data),
+        "Characters typed": sum(tr.characters for tr in transcription_data),
     }
 
     plt.axis('off')
 
-    plt.text(0.5, 0.95, f"CtQ in Numbers", horizontalalignment='center',
+    plt.text(0.5, 0.95, "CtQ in Numbers", horizontalalignment='center',
                  verticalalignment='center', fontsize='25', color=config.colors.text)
 
     for i, key in enumerate(stats):
         height = 0.83 - i * 0.13
         color = config.colors.primary if i % 2 == 0 else config.colors.secondary
 
-        plt.text(0.5, height, f"{stats[key]} ", horizontalalignment='right',
+        formatted_stat = "{:,}".format(stats[key])
+        plt.text(0.5, height, f"{formatted_stat} ", horizontalalignment='right',
                  verticalalignment='center', fontsize='25', color=color)
         plt.text(0.5, height, key, horizontalalignment='left',
                  verticalalignment='center', fontsize='15', color=config.colors.text)
