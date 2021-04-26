@@ -13,6 +13,9 @@ class SubGammaData():
 
     def __setitem__(self, subreddit: str, gamma: str):
         self._data[subreddit] = gamma
+    
+    def __len__(self):
+        return len(self._data)
 
     def to_dict(self) -> Dict:
         return self._data

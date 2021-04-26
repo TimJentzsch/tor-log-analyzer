@@ -70,8 +70,9 @@ def process_user_char_data(config: Config, transcriptions: List[Transcription]) 
 
 
 def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Transcription]:
+    transcriptions = {}
     cache = {}
-    if not config.no_cache:
+    if config.force_cache or not config.no_cache:
         with open(f"{config.cache_dir}/transcriptions.json", encoding='utf8') as f:
             try:
                 cache = json.load(f)
@@ -79,7 +80,6 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
                 cache = {}
 
     reddit_api = RedditAPI(config)
-    transcriptions = {}
     with click.progressbar(dones, label="  Fetching transcriptions: ") as pbar:
         for done in pbar:
             # Try to get from cache
@@ -87,7 +87,7 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
                 transcriptions[done.post_id] = transcription_from_dict(
                     cache[done.post_id])
             # Get transcription from Reddit
-            else:
+            elif not config.force_cache:
                 transcription_comment = reddit_api.get_transcription(
                     done.post_id, done.username)
                 if transcription_comment is None:

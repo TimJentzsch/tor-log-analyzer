@@ -5,7 +5,7 @@ import click
 
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.data_processors import process_lines, process_sub_gamma_data, process_transcription_data, process_user_char_data, process_user_gamma_data
-from tor_log_analyzer.stat_generators import generate_format_stats, generate_history, generate_sub_stats, generate_type_stats, generate_user_count_length_stats, generate_user_gamma_stats, generate_user_max_length_stats
+from tor_log_analyzer.stat_generators import generate_format_stats, generate_history, generate_sub_stats, generate_type_stats, generate_user_count_length_stats, generate_user_gamma_stats, generate_user_max_length_stats, generate_general_stats
 
 
 def configure_plot_style(config: Config):
@@ -69,6 +69,8 @@ def analyze_logs(config: Config):
 
     click.echo("Generating stats:")
     # Generate stats
+    click.echo("  Generating general stats.")
+    generate_general_stats(config, user_gamma_data, user_char_data, sub_gamma_data, transcription_data)
     click.echo("  Generating history chart.")
     generate_history(config, dones)
     click.echo("  Generating user transcription count chart.")

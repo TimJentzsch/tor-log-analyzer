@@ -282,3 +282,29 @@ def generate_user_max_length_stats(config: Config, user_char_data: UserCharData)
 
     plt.savefig(f"{config.image_dir}/user_max_length.png")
     plt.close()
+
+
+def generate_general_stats(config: Config, user_gamma_data: UserGammaData, user_char_data: UserCharData, sub_gamma_data: SubGammaData, transcription_data: List[Transcription]):
+    stats = {
+        "Participants": len(user_gamma_data),
+        "Subreddits": len(sub_gamma_data),
+        "Transcriptions": len(transcription_data),
+        "Characters typed": sum(user_char_data[user].total for user in user_char_data)
+    }
+
+    plt.axis('off')
+
+    plt.text(0.5, 0.95, f"CtQ in Numbers", horizontalalignment='center',
+                 verticalalignment='center', fontsize='25', color=config.colors.text)
+
+    for i, key in enumerate(stats):
+        height = 0.83 - i * 0.13
+        color = config.colors.primary if i % 2 == 0 else config.colors.secondary
+
+        plt.text(0.5, height, f"{stats[key]} ", horizontalalignment='right',
+                 verticalalignment='center', fontsize='25', color=color)
+        plt.text(0.5, height, key, horizontalalignment='left',
+                 verticalalignment='center', fontsize='15', color=config.colors.text)
+
+    plt.savefig(f"{config.image_dir}/general.png")
+    plt.close()

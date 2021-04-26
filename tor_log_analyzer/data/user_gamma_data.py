@@ -13,6 +13,9 @@ class UserGammaData():
 
     def __setitem__(self, username: str, gamma: str):
         self._data[username] = gamma
+    
+    def __len__(self):
+        return len(self._data)
 
     def to_dict(self) -> Dict:
         return self._data
