@@ -74,7 +74,10 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
                 json.dump(dict([(key, transcriptions[key].to_dict())
                                 for key in transcriptions]), f, ensure_ascii=False, indent=2)
 
-    return [transcriptions[key] for key in transcriptions]
+    # Sort by time
+    transcription_list = [transcriptions[key] for key in transcriptions]
+    transcription_list.sort(key=lambda tr: tr.time)
+    return transcription_list
 
 
 def process_user_gamma_data(config: Config, transcriptions: List[Transcription]) -> UserGammaData:
