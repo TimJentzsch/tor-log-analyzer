@@ -44,32 +44,6 @@ def process_lines(config: Config, lines: List[str]) -> List[DoneData]:
     return dones
 
 
-def process_user_gamma_data(config: Config, dones: List[DoneData]) -> UserGammaData:
-    user_gamma_data = UserGammaData()
-
-    for done in dones:
-        user_gamma_data[done.username] += 1
-
-    with open(f"{config.cache_dir}/user_gamma.json", "w") as f:
-        dumps = json.dumps(user_gamma_data.to_dict(), indent=2)
-        f.write(dumps + "\n")
-
-    return user_gamma_data
-
-
-def process_user_char_data(config: Config, transcriptions: List[Transcription]) -> UserCharData:
-    user_char_data = UserCharData()
-
-    for transcription in transcriptions:
-        user_char_data[transcription.author] += transcription.characters
-
-    with open(f"{config.cache_dir}/user_chars.json", "w") as f:
-        dumps = json.dumps(user_char_data.to_dict(), indent=2)
-        f.write(dumps + "\n")
-
-    return user_char_data
-
-
 def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Transcription]:
     transcriptions = {}
     cache = {}
@@ -101,6 +75,32 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
                                 for key in transcriptions]), f, ensure_ascii=False, indent=2)
 
     return [transcriptions[key] for key in transcriptions]
+
+
+def process_user_gamma_data(config: Config, transcriptions: List[Transcription]) -> UserGammaData:
+    user_gamma_data = UserGammaData()
+
+    for transcription in transcriptions:
+        user_gamma_data[transcription.username] += 1
+
+    with open(f"{config.cache_dir}/user_gamma.json", "w") as f:
+        dumps = json.dumps(user_gamma_data.to_dict(), indent=2)
+        f.write(dumps + "\n")
+
+    return user_gamma_data
+
+
+def process_user_char_data(config: Config, transcriptions: List[Transcription]) -> UserCharData:
+    user_char_data = UserCharData()
+
+    for transcription in transcriptions:
+        user_char_data[transcription.username] += transcription.characters
+
+    with open(f"{config.cache_dir}/user_chars.json", "w") as f:
+        dumps = json.dumps(user_char_data.to_dict(), indent=2)
+        f.write(dumps + "\n")
+
+    return user_char_data
 
 
 def process_sub_gamma_data(config: Config, transcriptions: List[Transcription]) -> SubGammaData:

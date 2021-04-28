@@ -81,10 +81,10 @@ def extract_format_and_type(header: str):
 
 
 class Transcription():
-    def __init__(self, tid: str, subreddit: str, author: str, time: datetime, body: str):
+    def __init__(self, tid: str, subreddit: str, username: str, time: datetime, body: str):
         self._id = tid
         self._subreddit = subreddit
-        self._author = author
+        self._username = username
         self._time = time
         self._body = body
 
@@ -106,8 +106,8 @@ class Transcription():
         return self._subreddit
 
     @property
-    def author(self) -> str:
-        return self._author
+    def username(self) -> str:
+        return self._username
     
     @property
     def time(self) -> datetime:
@@ -154,7 +154,7 @@ class Transcription():
         return {
             "id": self.id,
             "subreddit": self.subreddit,
-            "author": self.author,
+            "username": self.username,
             "timestamp": self.timestamp,
             "body": self.body,
         }
@@ -164,7 +164,7 @@ def transcription_from_dict(transcription: Dict) -> Transcription:
     return Transcription(
         tid=transcription["id"],
         subreddit=transcription["subreddit"],
-        author=transcription["author"],
+        username=transcription["username"],
         time=parser.parse(transcription["timestamp"]),
         body=transcription["body"],
     )
@@ -174,7 +174,7 @@ def transcription_from_comment(comment: Comment) -> Transcription:
     return Transcription(
         tid=comment.id,
         subreddit=comment.subreddit.display_name,
-        author=comment.author.name,
+        username=comment.author.name,
         time=datetime.utcfromtimestamp(comment.created_utc),
         body=comment.body,
     )

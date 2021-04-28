@@ -2,7 +2,6 @@ from typing import List, Tuple
 import json
 import matplotlib.pyplot as plt
 
-from tor_log_analyzer.data.done_data import DoneData
 from tor_log_analyzer.transcription import Transcription
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.data.user_gamma_data import UserGammaData
@@ -56,10 +55,10 @@ def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
     plt.close()
 
 
-def generate_history(config: Config, dones: List[DoneData]):
+def generate_history(config: Config, transcriptions: List[Transcription]):
     history_data = []
 
-    for i, val in enumerate(dones):
+    for i, val in enumerate(transcriptions):
         entry = (val.time, i + 1)
         history_data.append(entry)
 
