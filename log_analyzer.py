@@ -11,7 +11,8 @@ from tor_log_analyzer.config import Config, config_from_dict_or_defaults
 
 def config_from_options(
         # General
-        config_file, input_file, output_dir, top_count, no_cache, force_cache,
+        config_file, input_file, output_dir, top_count,
+        no_cache, force_cache, start_date, end_date,
         # Auth
         auth_client_id, auth_client_secret,
         # Colors
@@ -66,6 +67,8 @@ def config_from_options(
         "top-count": top_count,
         "no-cache": no_cache,
         "force-cache": force_cache,
+        "start-date": start_date,
+        "end-date": end_date,
         "auth": merged_auth_config_dict,
         "colors": merged_color_config_dict,
     })
@@ -87,6 +90,8 @@ def config_from_options(
 @click.option("-t", "--top-count", "top_count", help="the number of entires in the top X diagrams", type=int)
 @click.option("--no-cache/--cache", "no_cache", default=False, help="disables the cache", type=bool)
 @click.option("--force-cache", "force_cache", is_flag=True, default=False, help="forces to use the cache and doesn't pull data from Reddit", type=bool)
+@click.option("-s", "--start-date", "start_date", help="the start time of the event", type=str)
+@click.option("-e", "--end-date", "end_date", help="the end time", type=str)
 # Auth options
 @click.option("--auth.client-id", "auth_client_id", help="the client id assigned by reddit", type=str)
 @click.option("--auth.client-secret", "auth_client_secret", help="the client secret assigned by reddit", type=str)
@@ -99,7 +104,8 @@ def config_from_options(
 @click.option("--colors.line", "colors_line",  help="the color to use for the chart lines", type=str)
 def log_analyzer(
         version=False, about=False,
-        config_file=None, input_file=None, output_dir=None, top_count=None, no_cache=None, force_cache=None,
+        config_file=None, input_file=None, output_dir=None, top_count=None,
+        no_cache=None, force_cache=None, start_date=None, end_date=None,
         auth_client_id=None, auth_client_secret=None,
         colors_primary=None, colors_secondary=None, colors_tertiary=None,
         colors_background=None, colors_text=None, colors_line=None
@@ -109,7 +115,8 @@ def log_analyzer(
         return 0
 
     config = config_from_options(
-        config_file, input_file, output_dir, top_count, no_cache, force_cache,
+        config_file, input_file, output_dir, top_count,
+        no_cache, force_cache, start_date, end_date,
         auth_client_id, auth_client_secret,
         colors_primary, colors_secondary, colors_tertiary,
         colors_background, colors_text, colors_line
