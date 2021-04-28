@@ -58,9 +58,16 @@ def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
 def generate_history(config: Config, transcriptions: List[Transcription]):
     history_data = []
 
+    if config.start_date is not None:
+        history_data.append((config.start_date, 0))
+
     for i, val in enumerate(transcriptions):
-        entry = (val.time, i + 1)
-        history_data.append(entry)
+        # Add a "step" for each transcription
+        history_data.append((val.time, i))
+        history_data.append((val.time, i + 1))
+    
+    if config.end_date is not None:
+        history_data.append((config.end_date, len(transcriptions)))
 
     dates = [entry[0] for entry in history_data]
     data = [entry[1] for entry in history_data]

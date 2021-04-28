@@ -1,7 +1,7 @@
 from typing import List
 from datetime import timedelta
-from dateutil import parser
 import json
+from dateutil import parser
 import click
 
 from tor_log_analyzer.data.sub_gamma_data import SubGammaData
