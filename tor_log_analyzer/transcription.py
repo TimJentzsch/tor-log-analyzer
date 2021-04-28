@@ -1,4 +1,6 @@
 from typing import Dict
+from datetime import datetime
+from dateutil import parser
 import re
 
 from praw.models.reddit.comment import Comment
@@ -12,6 +14,15 @@ def extract_components(body: str):
     """
     parts = body.split("---")
 
+    # Header
+    #
+    # ---
+    #
+    # Content
+    #
+    # ---
+    #
+    # Footer
     header = parts[0].strip()
     content = "---".join(parts[1:-1]).strip()
     footer = parts[-1].strip()
@@ -70,10 +81,11 @@ def extract_format_and_type(header: str):
 
 
 class Transcription():
-    def __init__(self, tid: str, subreddit: str, author: str, body: str):
+    def __init__(self, tid: str, subreddit: str, author: str, time: datetime, body: str):
         self._id = tid
         self._subreddit = subreddit
         self._author = author
+        self._time = time
         self._body = body
 
         header, content, footer = extract_components(body)
@@ -96,6 +108,14 @@ class Transcription():
     @property
     def author(self) -> str:
         return self._author
+    
+    @property
+    def time(self) -> datetime:
+        return self._time
+
+    @property
+    def timestamp(self) -> str:
+        return self.time.__str__()
 
     @property
     def body(self) -> str:
@@ -135,6 +155,7 @@ class Transcription():
             "id": self.id,
             "subreddit": self.subreddit,
             "author": self.author,
+            "timestamp": self.timestamp,
             "body": self.body,
         }
 
@@ -144,6 +165,7 @@ def transcription_from_dict(transcription: Dict) -> Transcription:
         tid=transcription["id"],
         subreddit=transcription["subreddit"],
         author=transcription["author"],
+        time=parser.parse(transcription["timestamp"]),
         body=transcription["body"],
     )
 
@@ -153,5 +175,6 @@ def transcription_from_comment(comment: Comment) -> Transcription:
         tid=comment.id,
         subreddit=comment.subreddit.display_name,
         author=comment.author.name,
+        time=datetime.utcfromtimestamp(comment.created_utc),
         body=comment.body,
     )
