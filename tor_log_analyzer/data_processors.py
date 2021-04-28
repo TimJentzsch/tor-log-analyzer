@@ -1,4 +1,5 @@
 from typing import List
+from datetime import timedelta
 from dateutil import parser
 import json
 import click
@@ -40,6 +41,14 @@ def process_lines(config: Config, lines: List[str]) -> List[DoneData]:
     with open(f"{config.cache_dir}/done.json", "w") as f:
         dumps = json.dumps([done.to_dict() for done in dones], indent=2)
         f.write(dumps + "\n")
+    
+    # Filter dones outside the time frame
+    if config.start_date:
+        dones = [done for done in dones if done.time > config.start_date]
+    if config.end_date:
+        # Add a 2 h buffer, to give the transcriber time to mark their transcription as done
+        buffer_time = timedelta(hours=2)
+        dones = [done for done in dones if done.time < config.end_date + buffer_time]
 
     return dones
 
@@ -77,6 +86,13 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
     # Sort by time
     transcription_list = [transcriptions[key] for key in transcriptions]
     transcription_list.sort(key=lambda tr: tr.time)
+
+    # Filter transcriptions outside the time frame
+    if config.start_date:
+        transcription_list = [tr for tr in transcription_list if tr.time > config.start_date]
+    if config.end_date:
+        transcription_list = [tr for tr in transcription_list if tr.time < config.end_date]
+
     return transcription_list
 
 
