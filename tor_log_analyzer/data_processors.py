@@ -43,12 +43,12 @@ def process_lines(config: Config, lines: List[str]) -> List[DoneData]:
         f.write(dumps + "\n")
     
     # Filter dones outside the time frame
-    if config.start_date:
-        dones = [done for done in dones if done.time > config.start_date]
-    if config.end_date:
+    if config.event.start:
+        dones = [done for done in dones if done.time > config.event.start]
+    if config.event.end:
         # Add a 2 h buffer, to give the transcriber time to mark their transcription as done
         buffer_time = timedelta(hours=2)
-        dones = [done for done in dones if done.time < config.end_date + buffer_time]
+        dones = [done for done in dones if done.time < config.event.end + buffer_time]
 
     return dones
 
@@ -88,10 +88,10 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
     transcription_list.sort(key=lambda tr: tr.time)
 
     # Filter transcriptions outside the time frame
-    if config.start_date:
-        transcription_list = [tr for tr in transcription_list if tr.time > config.start_date]
-    if config.end_date:
-        transcription_list = [tr for tr in transcription_list if tr.time < config.end_date]
+    if config.event.start:
+        transcription_list = [tr for tr in transcription_list if tr.time > config.event.start]
+    if config.event.end:
+        transcription_list = [tr for tr in transcription_list if tr.time < config.event.end]
 
     return transcription_list
 
