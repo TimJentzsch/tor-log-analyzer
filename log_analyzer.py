@@ -19,7 +19,7 @@ def config_from_options(
         colors_primary, colors_secondary, colors_tertiary,
         colors_background, colors_text, colors_line,
         # Event
-        event_name, event_abrv, event_start, event_end
+        event_name, event_abrv, event_organization, event_start, event_end
 ) -> Config:
     """
     Creates the config from the app parameters.
@@ -66,6 +66,7 @@ def config_from_options(
     event_config_dict = clean_dict({
         "name": event_name,
         "abrv": event_abrv,
+        "organization": event_organization,
         "start": event_start,
         "end": event_end,
     })
@@ -115,13 +116,14 @@ def config_from_options(
 # Event options
 @click.option("--event.name", "event_name", help="the name of the event", type=str)
 @click.option("--event.abrv", "event_abrv", help="the abbrevation for the event name", type=str)
+@click.option("--event.organization", "event_organization", help="the organization conducting the event", type=str)
 @click.option("--event.start", "event_start", help="the start time of the event", type=str)
 @click.option("--event.end", "event_end", help="the end time of the event", type=str)
 def log_analyzer(
         version=False, about=False,
         config_file=None, input_file=None, output_dir=None, top_count=None,
         no_cache=None, force_cache=None,
-        event_name=None, event_abrv=None, event_start=None, event_end=None,
+        event_name=None, event_abrv=None, event_organization=None, event_start=None, event_end=None,
         auth_client_id=None, auth_client_secret=None,
         colors_primary=None, colors_secondary=None, colors_tertiary=None,
         colors_background=None, colors_text=None, colors_line=None
@@ -140,7 +142,7 @@ def log_analyzer(
         colors_primary, colors_secondary, colors_tertiary,
         colors_background, colors_text, colors_line,
         # Event
-        event_name, event_abrv, event_start, event_end,
+        event_name, event_abrv, event_organization, event_start, event_end,
     )
 
     analyze_logs(config)

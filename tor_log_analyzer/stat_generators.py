@@ -19,19 +19,24 @@ def add_watermark(config):
 
     posx, posy = 0.02, 0.02
 
-    tor_text = fig.text(posx, posy, "r/TranscribersOfReddit",
+    if config.event.organization:
+        tor_text = fig.text(posx, posy, config.event.organization,
                         color=config.colors.secondary, fontsize="10", va="bottom")
-    _, yp, _, hp = tor_text.get_tightbbox(
-        plt.gcf().canvas.get_renderer()).bounds
-    posy2 = (yp + hp) / fh
+        # Calculate offset
+        _, yp, _, hp = tor_text.get_tightbbox(
+            plt.gcf().canvas.get_renderer()).bounds
+        posy = posy + (yp + hp) / fh
 
-    txt = fig.text(posx, posy + posy2, "CtQ",
+    if config.event.abrv:
+        txt = fig.text(posx, posy, config.event.abrv,
                    color=config.colors.primary, fontsize="17", va="bottom")
-    # Calculate where we stopped typing
-    xp, _, wp, _ = txt.get_tightbbox(plt.gcf().canvas.get_renderer()).bounds
-    posx2 = (xp + wp) / fw
-    # Continue text in other color
-    fig.text(posx + posx2, posy + posy2, "Mar 26 2021",
+        # Calculate offset
+        xp, _, wp, _ = txt.get_tightbbox(plt.gcf().canvas.get_renderer()).bounds
+        posx = posx + (xp + wp) / fw
+
+    if config.event.start:
+        date_str = config.event.start.strftime("%b %d, %Y")
+        fig.text(posx, posy, date_str,
              color=config.colors.text, fontsize="10", va="bottom")
 
 
@@ -340,7 +345,9 @@ def generate_general_stats(config: Config, user_gamma_data: UserGammaData, sub_g
 
     plt.axis('off')
 
-    plt.text(0.5, 0.95, "CtQ in Numbers", horizontalalignment='center',
+    title = f"{config.event.name} in Numbers" if config.event.name is not None else "General Stats"
+
+    plt.text(0.5, 0.95, title, horizontalalignment='center',
              verticalalignment='center', fontsize='25', color=config.colors.text)
 
     for i, key in enumerate(stats):
