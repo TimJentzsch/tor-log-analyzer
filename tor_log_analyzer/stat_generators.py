@@ -21,7 +21,7 @@ def add_watermark(config):
 
     if config.event.organization:
         tor_text = fig.text(posx, posy, config.event.organization,
-                        color=config.colors.secondary, fontsize="10", va="bottom")
+                            color=config.colors.secondary, fontsize="10", va="bottom")
         # Calculate offset
         _, yp, _, hp = tor_text.get_tightbbox(
             plt.gcf().canvas.get_renderer()).bounds
@@ -29,15 +29,16 @@ def add_watermark(config):
 
     if config.event.abrv:
         txt = fig.text(posx, posy, config.event.abrv,
-                   color=config.colors.primary, fontsize="17", va="bottom")
+                       color=config.colors.primary, fontsize="17", va="bottom")
         # Calculate offset
-        xp, _, wp, _ = txt.get_tightbbox(plt.gcf().canvas.get_renderer()).bounds
+        xp, _, wp, _ = txt.get_tightbbox(
+            plt.gcf().canvas.get_renderer()).bounds
         posx = posx + (xp + wp) / fw
 
     if config.event.start:
         date_str = config.event.start.strftime("%b %d, %Y")
         fig.text(posx, posy, date_str,
-             color=config.colors.text, fontsize="10", va="bottom")
+                 color=config.colors.text, fontsize="10", va="bottom")
 
 
 def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
@@ -66,7 +67,7 @@ def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
 
     if len(sorted_data) > top_count:
         colors = [config.colors.secondary] + colors
-    
+
     plt.barh(labels, data, color=colors)
     plt.ylabel("User")
     plt.xlabel("Transcriptions")
@@ -343,6 +344,13 @@ def generate_general_stats(config: Config, user_gamma_data: UserGammaData, sub_g
         "Characters typed": sum(tr.characters for tr in transcription_data),
     }
 
+    if len(transcription_data) >= 2:
+        # Get the total duration transcribed
+        duration = transcription_data[-1].time - transcription_data[0].time
+        # Strip off the seconds
+        duration_str = ':'.join(str(duration).split(':')[:2]) + " h"
+        stats["Duration"] = duration_str
+
     plt.axis('off')
 
     title = f"{config.event.name} in Numbers" if config.event.name is not None else "General Stats"
@@ -351,14 +359,17 @@ def generate_general_stats(config: Config, user_gamma_data: UserGammaData, sub_g
              verticalalignment='center', fontsize='25', color=config.colors.text)
 
     for i, key in enumerate(stats):
-        height = 0.83 - i * 0.13
+        height = 0.81 - i * 0.11
         color = config.colors.primary if i % 2 == 0 else config.colors.secondary
 
-        formatted_stat = "{:,}".format(stats[key])
+        formatted_stat = stats[key]
+        if isinstance(stats[key], int):
+            formatted_stat = "{:,}".format(stats[key])
+
         plt.text(0.5, height, f"{formatted_stat} ", horizontalalignment='right',
-                 verticalalignment='center', fontsize='25', color=color)
+                 verticalalignment='center', fontsize='23', color=color)
         plt.text(0.5, height, key, horizontalalignment='left',
-                 verticalalignment='center', fontsize='15', color=config.colors.text)
+                 verticalalignment='center', fontsize='12', color=config.colors.text)
 
     add_watermark(config)
 
