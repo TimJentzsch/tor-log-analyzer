@@ -30,6 +30,7 @@ def configure_plot_style(config: Config):
     plt.rcParams['ytick.labelcolor'] = colors.text
     plt.rcParams['grid.color'] = colors.line
     plt.rcParams['grid.alpha'] = 0.8
+    plt.rcParams["figure.dpi"] = 300.0
 
 
 def analyze_logs(config: Config):

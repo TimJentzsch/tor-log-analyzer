@@ -9,6 +9,31 @@ from tor_log_analyzer.data.user_char_data import UserCharData
 from tor_log_analyzer.data.sub_gamma_data import SubGammaData
 from tor_log_analyzer.data.post_type_data import PostTypeData
 
+HBAR_HMARGIN = 0.1
+HBAR_VMARGIN = 0.02
+
+
+def add_watermark(config):
+    fig: plt.Figure = plt.gcf()
+    _, _, fw, fh = fig.bbox.bounds
+
+    posx, posy = 0.02, 0.02
+
+    tor_text = fig.text(posx, posy, "r/TranscribersOfReddit",
+                        color=config.colors.secondary, fontsize="10", va="bottom")
+    _, yp, _, hp = tor_text.get_tightbbox(
+        plt.gcf().canvas.get_renderer()).bounds
+    posy2 = (yp + hp) / fh
+
+    txt = fig.text(posx, posy + posy2, "CtQ",
+                   color=config.colors.primary, fontsize="17", va="bottom")
+    # Calculate where we stopped typing
+    xp, _, wp, _ = txt.get_tightbbox(plt.gcf().canvas.get_renderer()).bounds
+    posx2 = (xp + wp) / fw
+    # Continue text in other color
+    fig.text(posx + posx2, posy + posy2, "Mar 26",
+             color=config.colors.text, fontsize="14", va="bottom")
+
 
 def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
     top_count = config.top_count
@@ -42,6 +67,10 @@ def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
     plt.xlabel("Transcriptions")
     plt.title(f"Top {top_count} Contributors with the Most Transcriptions")
 
+    add_watermark(config)
+
+    plt.gca().margins(HBAR_HMARGIN, HBAR_VMARGIN)
+
     # Annotate data
     for x, y in zip(data, labels):
         plt.annotate(x,  # label with gamma
@@ -65,7 +94,7 @@ def generate_history(config: Config, transcriptions: List[Transcription]):
         # Add a "step" for each transcription
         history_data.append((val.time, i))
         history_data.append((val.time, i + 1))
-    
+
     if config.end_date is not None:
         history_data.append((config.end_date, len(transcriptions)))
 
@@ -77,6 +106,8 @@ def generate_history(config: Config, transcriptions: List[Transcription]):
     plt.xlabel("Time")
     plt.ylabel("Total Transcriptions")
     plt.title("History")
+
+    add_watermark(config)
 
     plt.savefig(f"{config.image_dir}/history.png")
     plt.close()
@@ -113,6 +144,10 @@ def generate_sub_stats(config: Config, sub_gamma_data: SubGammaData):
     plt.ylabel("Subreddit")
     plt.xlabel("Transcriptions")
     plt.title(f"Top {top_count} Subreddits with the Most Transcriptions")
+
+    add_watermark(config)
+
+    plt.gca().margins(HBAR_HMARGIN, HBAR_VMARGIN)
 
     # Annotate data
     for x, y in zip(data, labels):
@@ -158,6 +193,10 @@ def generate_type_stats(config: Config, type_data: PostTypeData):
     plt.ylabel("Type")
     plt.xlabel("Transcriptions")
     plt.title(f"Top {top_count} Types")
+
+    add_watermark(config)
+
+    plt.gca().margins(HBAR_HMARGIN, HBAR_VMARGIN)
 
     # Annotate data
     for x, y in zip(data, labels):
@@ -220,6 +259,8 @@ def generate_format_stats(config: Config, transcriptions: List[Transcription]):
     plt.title(f"Top {top_count} Formats")
     plt.gca().axis('equal')
 
+    add_watermark(config)
+
     plt.savefig(f"{config.image_dir}/formats.png")
     plt.close()
 
@@ -237,6 +278,8 @@ def generate_user_count_length_stats(config: Config, user_gamma_data: UserGammaD
     plt.ylabel("Transcription Count")
     plt.xlabel("Transcription Length Median (Characters)")
     plt.title("Transcription Length vs. Transcription Count")
+
+    add_watermark(config)
 
     plt.savefig(f"{config.image_dir}/user_count_length.png")
     plt.close()
@@ -265,6 +308,10 @@ def generate_user_max_length_stats(config: Config, user_char_data: UserCharData)
     plt.xlabel("Longest Transcription (Characters)")
     plt.title(f"Top {top_count} Contributors with the Longest Transcriptions")
 
+    add_watermark(config)
+
+    plt.gca().margins(HBAR_HMARGIN, HBAR_VMARGIN)
+
     # Annotate data
     for x, y in zip(data, labels):
         plt.annotate(x,  # label with gamma
@@ -291,7 +338,7 @@ def generate_general_stats(config: Config, user_gamma_data: UserGammaData, sub_g
     plt.axis('off')
 
     plt.text(0.5, 0.95, "CtQ in Numbers", horizontalalignment='center',
-                 verticalalignment='center', fontsize='25', color=config.colors.text)
+             verticalalignment='center', fontsize='25', color=config.colors.text)
 
     for i, key in enumerate(stats):
         height = 0.83 - i * 0.13
@@ -302,6 +349,8 @@ def generate_general_stats(config: Config, user_gamma_data: UserGammaData, sub_g
                  verticalalignment='center', fontsize='25', color=color)
         plt.text(0.5, height, key, horizontalalignment='left',
                  verticalalignment='center', fontsize='15', color=config.colors.text)
+
+    add_watermark(config)
 
     plt.savefig(f"{config.image_dir}/general.png")
     plt.close()
