@@ -61,7 +61,7 @@ def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
 
     if len(sorted_data) > top_count:
         colors = [config.colors.secondary] + colors
-
+    
     plt.barh(labels, data, color=colors)
     plt.ylabel("User")
     plt.xlabel("Transcriptions")
@@ -101,8 +101,9 @@ def generate_history(config: Config, transcriptions: List[Transcription]):
     dates = [entry[0] for entry in history_data]
     data = [entry[1] for entry in history_data]
 
-    plt.grid()
-    plt.plot(dates, data, color=config.colors.primary)
+    axes = plt.axes((0.12, 0.2, 0.83, 0.72))
+    axes.plot(dates, data, color=config.colors.primary)
+    axes.grid()
     plt.xlabel("Time")
     plt.ylabel("Total Transcriptions")
     plt.title("History")
@@ -189,7 +190,8 @@ def generate_type_stats(config: Config, type_data: PostTypeData):
     if len(sorted_data) > top_count:
         colors = [config.colors.secondary] + colors
 
-    plt.barh(labels, data, color=colors)
+    axes = plt.axes((0.2, 0.2, 0.73, 0.72))
+    axes.barh(labels, data, color=colors)
     plt.ylabel("Type")
     plt.xlabel("Transcriptions")
     plt.title(f"Top {top_count} Types")
@@ -274,7 +276,8 @@ def generate_user_count_length_stats(config: Config, user_gamma_data: UserGammaD
             counts.append(user_gamma_data[username])
             medians.append(user_char_data[username].median)
 
-    plt.scatter(medians, counts, c=[config.colors.primary])
+    axes = plt.axes((0.12, 0.2, 0.83, 0.72))
+    axes.scatter(medians, counts, c=[config.colors.primary])
     plt.ylabel("Transcription Count")
     plt.xlabel("Transcription Length Median (Characters)")
     plt.title("Transcription Length vs. Transcription Count")
