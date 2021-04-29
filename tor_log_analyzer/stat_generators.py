@@ -31,8 +31,8 @@ def add_watermark(config):
     xp, _, wp, _ = txt.get_tightbbox(plt.gcf().canvas.get_renderer()).bounds
     posx2 = (xp + wp) / fw
     # Continue text in other color
-    fig.text(posx + posx2, posy + posy2, "Mar 26",
-             color=config.colors.text, fontsize="14", va="bottom")
+    fig.text(posx + posx2, posy + posy2, "Mar 26 2021",
+             color=config.colors.text, fontsize="10", va="bottom")
 
 
 def generate_user_gamma_stats(config: Config, user_gamma_data: UserGammaData):
@@ -332,7 +332,7 @@ def generate_general_stats(config: Config, user_gamma_data: UserGammaData, sub_g
     stats = {
         "Participants": len(user_gamma_data),
         "Subreddits": len(sub_gamma_data),
-        "Post Types": len(post_types),
+        "Post types": len(post_types),
         "Transcriptions": len(transcription_data),
         "Words written": sum(tr.words for tr in transcription_data),
         "Characters typed": sum(tr.characters for tr in transcription_data),
