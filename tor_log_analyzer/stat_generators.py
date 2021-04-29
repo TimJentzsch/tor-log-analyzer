@@ -194,7 +194,7 @@ def generate_type_stats(config: Config, type_data: PostTypeData):
     axes.barh(labels, data, color=colors)
     plt.ylabel("Type")
     plt.xlabel("Transcriptions")
-    plt.title(f"Top {top_count} Types")
+    plt.title(f"Top {top_count} Post Types")
 
     add_watermark(config)
 
@@ -209,7 +209,7 @@ def generate_type_stats(config: Config, type_data: PostTypeData):
                      ha="left",
                      va="center")
 
-    plt.savefig(f"{config.image_dir}/types.png")
+    plt.savefig(f"{config.image_dir}/post_types.png")
     plt.close()
 
 
@@ -223,7 +223,7 @@ def generate_format_stats(config: Config, transcriptions: List[Transcription]):
         else:
             format_data[t_format] = 1
 
-    with open(f"{config.cache_dir}/formats.json", "w") as f:
+    with open(f"{config.cache_dir}/post_formats.json", "w") as f:
         dumps = json.dumps(format_data, indent=2)
         f.write(dumps + "\n")
 
@@ -258,12 +258,12 @@ def generate_format_stats(config: Config, transcriptions: List[Transcription]):
         colors = [config.colors.secondary] + colors
 
     plt.pie(data, labels=labels, colors=colors)
-    plt.title(f"Top {top_count} Formats")
+    plt.title("Top Post Formats")
     plt.gca().axis('equal')
 
     add_watermark(config)
 
-    plt.savefig(f"{config.image_dir}/formats.png")
+    plt.savefig(f"{config.image_dir}/post_formats.png")
     plt.close()
 
 
@@ -355,5 +355,5 @@ def generate_general_stats(config: Config, user_gamma_data: UserGammaData, sub_g
 
     add_watermark(config)
 
-    plt.savefig(f"{config.image_dir}/general.png")
+    plt.savefig(f"{config.image_dir}/general_stats.png")
     plt.close()
