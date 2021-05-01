@@ -81,8 +81,9 @@ def extract_format_and_type(header: str):
 
 
 class Transcription():
-    def __init__(self, tid: str, subreddit: str, username: str, time: datetime, body: str):
+    def __init__(self, tid: str, url: str, subreddit: str, username: str, time: datetime, body: str):
         self._id = tid
+        self._url = url
         self._subreddit = subreddit
         self._username = username
         self._time = time
@@ -100,6 +101,10 @@ class Transcription():
     @property
     def id(self) -> str:
         return self._id
+    
+    @property
+    def url(self) -> str:
+        return self._url
 
     @property
     def subreddit(self) -> str:
@@ -153,6 +158,7 @@ class Transcription():
     def to_dict(self) -> Dict:
         return {
             "id": self.id,
+            "url": self.url,
             "subreddit": self.subreddit,
             "username": self.username,
             "timestamp": self.timestamp,
@@ -163,6 +169,7 @@ class Transcription():
 def transcription_from_dict(transcription: Dict) -> Transcription:
     return Transcription(
         tid=transcription["id"],
+        url=transcription["url"],
         subreddit=transcription["subreddit"],
         username=transcription["username"],
         time=parser.parse(transcription["timestamp"]),
@@ -173,6 +180,7 @@ def transcription_from_dict(transcription: Dict) -> Transcription:
 def transcription_from_comment(comment: Comment) -> Transcription:
     return Transcription(
         tid=comment.id,
+        url=f"https://www.reddit.com{comment.permalink}",
         subreddit=comment.subreddit.display_name,
         username=comment.author.name,
         time=datetime.utcfromtimestamp(comment.created_utc),
