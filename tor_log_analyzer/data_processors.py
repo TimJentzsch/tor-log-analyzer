@@ -41,14 +41,15 @@ def process_lines(config: Config, lines: List[str]) -> List[DoneData]:
     with open(f"{config.cache_dir}/done.json", "w") as f:
         dumps = json.dumps([done.to_dict() for done in dones], indent=2)
         f.write(dumps + "\n")
-    
+
     # Filter dones outside the time frame
     if config.event.start:
         dones = [done for done in dones if done.time > config.event.start]
     if config.event.end:
         # Add a 2 h buffer, to give the transcriber time to mark their transcription as done
         buffer_time = timedelta(hours=2)
-        dones = [done for done in dones if done.time < config.event.end + buffer_time]
+        dones = [done for done in dones if done.time <
+                 config.event.end + buffer_time]
 
     return dones
 
@@ -89,9 +90,11 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
 
     # Filter transcriptions outside the time frame
     if config.event.start:
-        transcription_list = [tr for tr in transcription_list if tr.time > config.event.start]
+        transcription_list = [
+            tr for tr in transcription_list if tr.time > config.event.start]
     if config.event.end:
-        transcription_list = [tr for tr in transcription_list if tr.time < config.event.end]
+        transcription_list = [
+            tr for tr in transcription_list if tr.time < config.event.end]
 
     return transcription_list
 
@@ -105,6 +108,16 @@ def process_user_gamma_data(config: Config, transcriptions: List[Transcription])
     with open(f"{config.cache_dir}/user_gamma.json", "w") as f:
         dumps = json.dumps(user_gamma_data.to_dict(), indent=2)
         f.write(dumps + "\n")
+
+    user_list = [(username, user_gamma_data[username])
+                 for username in user_gamma_data]
+    # Sort alphabetically
+    user_list.sort(key=lambda e: e[0].lower())
+    user_list_str = "\n".join(
+        [f"- u\/{user}: {gamma}" for user, gamma in user_list])
+
+    with open(f"{config.cache_dir}/user_list.txt", "w") as f:
+        f.write(user_list_str + "\n")
 
     return user_gamma_data
 
@@ -132,7 +145,18 @@ def process_sub_gamma_data(config: Config, transcriptions: List[Transcription]) 
         dumps = json.dumps(sub_gamma_data.to_dict(), indent=2)
         f.write(dumps + "\n")
 
+    sub_list = [(subreddit, sub_gamma_data[subreddit])
+                for subreddit in sub_gamma_data]
+    # Sort alphabetically
+    sub_list.sort(key=lambda e: e[0].lower())
+    sub_list_str = "\n".join(
+        [f"- r\/{sub}: {gamma}" for sub, gamma in sub_list])
+
+    with open(f"{config.cache_dir}/sub_list.txt", "w") as f:
+        f.write(sub_list_str + "\n")
+
     return sub_gamma_data
+
 
 def process_post_type_data(config: Config, transcriptions: List[Transcription]) -> PostTypeData:
     type_data = PostTypeData()
