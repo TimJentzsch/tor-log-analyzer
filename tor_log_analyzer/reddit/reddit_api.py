@@ -11,8 +11,8 @@ from tor_log_analyzer.reddit import __user_agent__, __tor_link__
 class RedditAPI():
     def __init__(self, config: Config):
         self._reddit = praw.Reddit(
-            client_id=config.auth.client_id,
-            client_secret=config.auth.client_secret,
+            client_id=config.auth.reddit_id,
+            client_secret=config.auth.reddit_secret,
             user_agent=__user_agent__,
         )
 

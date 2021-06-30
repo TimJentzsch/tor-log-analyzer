@@ -1,8 +1,9 @@
-from typing import List
+from typing import Dict, List
 from datetime import timedelta
 import json
 from dateutil import parser
 import click
+from blossom_wrapper import BlossomAPI, BlossomStatus
 
 from tor_log_analyzer.data.sub_gamma_data import SubGammaData
 from tor_log_analyzer.data.user_char_data import UserCharData
@@ -12,6 +13,8 @@ from tor_log_analyzer.data.done_data import DoneData
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.transcription import Transcription, transcription_from_comment, transcription_from_dict
 from tor_log_analyzer.reddit.reddit_api import RedditAPI
+
+volunteer_cache = {}
 
 
 def done_line_to_dict(line: str) -> DoneData:
@@ -52,6 +55,53 @@ def process_lines(config: Config, lines: List[str]) -> List[DoneData]:
                  config.event.end + buffer_time]
 
     return dones
+
+
+def submission_to_done(blossom: BlossomAPI, submission: Dict) -> DoneData:
+    volunteer_id = submission["completed_by"].split("/")[5]
+    if volunteer_id in volunteer_cache:
+        username = volunteer_cache[volunteer_id]
+    else:
+        print(submission["completed_by"])
+        v_response = blossom.get(f"volunteer/{volunteer_id}/")
+        if v_response.status_code != 200:
+            raise RuntimeError(f"Failed to get volunteer {volunteer_id}: {v_response.status_code}")
+        username = v_response.json()["username"]
+        volunteer_cache[volunteer_id] = username
+
+    return DoneData(
+        time=parser.parse(submission["complete_time"]),
+        post_id=submission["tor_url"].split("/")[6],
+        username=username
+    )
+
+
+def get_dones_from_blossom(config: Config) -> List[DoneData]:
+    blossom = BlossomAPI(
+        email=config.auth.blossom_email,
+        password=config.auth.blossom_password,
+        api_key=config.auth.blossom_api_key
+    )
+
+    page_size = 500
+    page = 1
+    has_more = True
+    dones = []
+
+    while has_more:
+        response = blossom.get("submission/", params={"from": config.event.start, "until": config.event.end, "page": page, "page_size": page_size})
+        if response.status_code != 200:
+            print(f"Failed to get submissions: {response.status_code}\n{response.json()}")
+            break
+        has_more = response.json()["next"] is not None
+        data = response.json()["results"]
+        completed_submissions = [post for post in data if post["completed_by"] is not None and post["complete_time"] is not None]
+        done_data = [submission_to_done(blossom, post) for post in completed_submissions]
+        dones += done_data
+        page += 1
+    
+    return dones
+
 
 
 def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Transcription]:
@@ -97,7 +147,6 @@ def process_transcription_data(config: Config, dones: List[DoneData]) -> List[Tr
             tr for tr in transcription_list if tr.time < config.event.end]
 
     return transcription_list
-
 
 def process_user_gamma_data(config: Config, transcriptions: List[Transcription]) -> UserGammaData:
     user_gamma_data = UserGammaData()

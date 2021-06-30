@@ -3,3 +3,4 @@ python-dateutil
 matplotlib
 PyYAML
 praw
+blossom-wrapper @ git+https://github.com/GrafeasGroup/blossom-wrapper.git

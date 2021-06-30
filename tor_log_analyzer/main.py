@@ -4,7 +4,7 @@ import time
 import click
 
 from tor_log_analyzer.config import Config
-from tor_log_analyzer.data_processors import process_lines, process_sub_gamma_data, process_transcription_data, process_user_char_data, process_user_gamma_data, process_post_type_data
+from tor_log_analyzer.data_processors import process_lines, process_sub_gamma_data, process_transcription_data, process_user_char_data, process_user_gamma_data, process_post_type_data, get_dones_from_blossom
 from tor_log_analyzer.stat_generators import generate_format_stats, generate_history, generate_sub_stats, generate_type_stats, generate_user_count_length_stats, generate_user_gamma_stats, generate_user_max_length_stats, generate_general_stats
 
 
@@ -58,8 +58,10 @@ def analyze_logs(config: Config):
         lines = f.read().splitlines()
         process_lines(config, lines)
     # Process data
-    click.echo("  Processing logs.")
-    dones = process_lines(config, lines)
+    # click.echo("  Processing logs.")
+    # dones = process_lines(config, lines)
+    click.echo("  Get submission from Blossom.")
+    dones = get_dones_from_blossom(config)
     click.echo("  Processing transcriptions.")
     transcription_data = process_transcription_data(config, dones)
     click.echo("  Processing users.")
