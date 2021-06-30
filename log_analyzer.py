@@ -14,7 +14,8 @@ def config_from_options(
         config_file, input_file, output_dir, top_count,
         no_cache, force_cache,
         # Auth
-        auth_client_id, auth_client_secret,
+        auth_reddit_id, auth_reddit_secret,
+        auth_blossom_email, auth_blossom_password, auth_blossom_api_key,
         # Colors
         colors_primary, colors_secondary, colors_tertiary,
         colors_background, colors_text, colors_line,
@@ -42,8 +43,11 @@ def config_from_options(
 
     # Authentification
     auth_config_dict = clean_dict({
-        "client-id": auth_client_id,
-        "client-secret": auth_client_secret,
+        "reddit-id": auth_reddit_id,
+        "reddit-secret": auth_reddit_secret,
+        "blossom-email": auth_blossom_email,
+        "blossom-password": auth_blossom_password,
+        "blossom-api-key": auth_blossom_api_key,
     })
 
     merged_auth_config_dict = {
@@ -104,8 +108,11 @@ def config_from_options(
 @click.option("--no-cache/--cache", "no_cache", default=False, help="disables the cache", type=bool)
 @click.option("--force-cache", "force_cache", is_flag=True, default=False, help="forces to use the cache and doesn't pull data from Reddit", type=bool)
 # Auth options
-@click.option("--auth.client-id", "auth_client_id", help="the client id assigned by reddit", type=str)
-@click.option("--auth.client-secret", "auth_client_secret", help="the client secret assigned by reddit", type=str)
+@click.option("--auth.reddit-id", "auth_reddit_id", help="the client id assigned by reddit", type=str)
+@click.option("--auth.reddit-secret", "auth_reddit_secret", help="the client secret assigned by reddit", type=str)
+@click.option("--auth.blossom-email", "auth_blossom_email", help="the client id assigned by reddit", type=str)
+@click.option("--auth.blossom-password", "auth_blossom_password", help="the client secret assigned by reddit", type=str)
+@click.option("--auth.blossom-api-key", "auth_blossom_api_key", help="the client secret assigned by reddit", type=str)
 # Color options
 @click.option("--colors.primary", "colors_primary", help="the primary color to use in the charts", type=str)
 @click.option("--colors.secondary", "colors_secondary",  help="the secondary color to use in the charts", type=str)
@@ -124,7 +131,8 @@ def log_analyzer(
         config_file=None, input_file=None, output_dir=None, top_count=None,
         no_cache=None, force_cache=None,
         event_name=None, event_abrv=None, event_organization=None, event_start=None, event_end=None,
-        auth_client_id=None, auth_client_secret=None,
+        auth_reddit_id=None, auth_reddit_secret=None,
+        auth_blossom_email=None, auth_blossom_password=None, auth_blossom_api_key=None,
         colors_primary=None, colors_secondary=None, colors_tertiary=None,
         colors_background=None, colors_text=None, colors_line=None
 ):
@@ -137,7 +145,8 @@ def log_analyzer(
         config_file, input_file, output_dir, top_count,
         no_cache, force_cache,
         # Auth
-        auth_client_id, auth_client_secret,
+        auth_reddit_id, auth_reddit_secret,
+        auth_blossom_email, auth_blossom_password, auth_blossom_api_key,
         # Colors
         colors_primary, colors_secondary, colors_tertiary,
         colors_background, colors_text, colors_line,
