@@ -1,4 +1,5 @@
 from time import sleep
+from typing import Optional
 
 import praw
 from praw.models.reddit.submission import Submission
@@ -33,13 +34,29 @@ class RedditAPI():
         except Forbidden:
             return None
 
+        tr_comment: Optional[Comment] = None
+
+        print("Getting transcription...")
+
         while True:
-            comment_list = comments.list()
-            for comment in comment_list:
+            # print("List iter")
+            for comment in comments:
+                # print("Comment iter")
                 if isinstance(comment, Comment) and comment.author == username:
                     if __tor_link__ in comment.body and "&#32;" in comment.body:
-                        return comment
-
+                        # print(f"Transcription found {comment.id}")
+                        if tr_comment is None:
+                            # Main transcription found
+                            tr_comment = comment
+                        else:
+                            # Add the continued transcription text to the original one
+                            tr_comment.body += comment.body
+                        
+                        # Continue searching for a continued transcription
+                        comments = comment.replies
+                        comment_len = 0
+                        break
+            
             comments.replace_more()
 
             if len(comments) == comment_len:
@@ -48,4 +65,4 @@ class RedditAPI():
             comment_len = len(comments)
             sleep(1)
 
-        return None
+        return tr_comment
