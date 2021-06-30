@@ -3,6 +3,7 @@ from time import sleep
 import praw
 from praw.models.reddit.submission import Submission
 from praw.models.reddit.comment import Comment
+from prawcore.exceptions import Forbidden
 
 from tor_log_analyzer.config import Config
 from tor_log_analyzer.reddit import __user_agent__, __tor_link__
@@ -25,9 +26,12 @@ class RedditAPI():
         return self._reddit.submission(url=tor_submission.url)
 
     def get_transcription(self, submission_full_name: str, username: str) -> Comment:
-        target_submission = self.get_target_submission(submission_full_name)
-        comments = target_submission.comments
-        comment_len = len(comments)
+        try:
+            target_submission = self.get_target_submission(submission_full_name)
+            comments = target_submission.comments
+            comment_len = len(comments)
+        except Forbidden:
+            return None
 
         while True:
             comment_list = comments.list()

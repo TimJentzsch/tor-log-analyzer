@@ -71,7 +71,7 @@ def submission_to_done(blossom: BlossomAPI, submission: Dict) -> DoneData:
 
     return DoneData(
         time=parser.parse(submission["complete_time"]),
-        post_id=submission["tor_url"].split("/")[6],
+        post_id="t3_" + submission["tor_url"].split("/")[6],
         username=username
     )
 
